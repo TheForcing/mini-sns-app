@@ -9,11 +9,16 @@ const ProfileForm = () => {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
 
-  const handleUpload = async () => {
+  const handleUpdateProfile = async () => {
     const user = auth.currentUser;
-    if (!user) return;
+    if (!user) {
+      setMsg("로그인이 필요합니다.");
+      return;
+    }
 
     setLoading(true);
+    setMsg("");
+
     try {
       let photoURL = "";
 
@@ -28,9 +33,9 @@ const ProfileForm = () => {
         photoURL: photoURL || undefined,
       });
 
-      setMsg("프로필이 성공적으로 업데이트되었습니다.");
-    } catch (err: any) {
-      setMsg("에러: " + err.message);
+      setMsg("프로필이 성공적으로 업데이트되었습니다!");
+    } catch (error: any) {
+      setMsg("에러: " + error.message);
     } finally {
       setLoading(false);
     }
@@ -39,6 +44,7 @@ const ProfileForm = () => {
   return (
     <div className="p-4 max-w-md mx-auto">
       <h2 className="text-xl font-bold mb-4">프로필 설정</h2>
+
       <input
         type="text"
         placeholder="닉네임"
@@ -46,20 +52,35 @@ const ProfileForm = () => {
         onChange={(e) => setDisplayName(e.target.value)}
         className="border p-2 w-full mb-2"
       />
+
       <input
         type="file"
         accept="image/*"
         onChange={(e) => setFile(e.target.files?.[0] || null)}
         className="mb-2"
       />
+
       <button
-        onClick={handleUpload}
+        onClick={handleUpdateProfile}
         disabled={loading}
-        className="bg-blue-500 text-white px-4 py-2 rounded"
+        className="bg-blue-500 text-white px-4 py-2 rounded w-full"
       >
-        {loading ? "업데이트 중..." : "업데이트"}
+        {loading ? "업데이트 중..." : "프로필 저장"}
       </button>
+
       {msg && <p className="mt-2 text-sm">{msg}</p>}
+
+      {auth.currentUser?.photoURL && (
+        <img
+          src={auth.currentUser.photoURL}
+          alt="프로필 사진"
+          className="w-24 h-24 rounded-full mb-2"
+        />
+      )}
+
+      <p className="mb-2">
+        현재 닉네임: {auth.currentUser?.displayName}
+      </p>
     </div>
   );
 };
