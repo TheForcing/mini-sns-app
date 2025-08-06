@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { auth, storage } from "../firebase";
+import { auth, storage, db } from "../firebase";
+import { doc, setDoc } from "firebase/firestore";
+import { checkNicknameExists } from "../utils/checkNicknameExists";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { updateProfile } from "firebase/auth";
 
@@ -15,11 +17,22 @@ const ProfileForm = () => {
       setMsg("로그인이 필요합니다.");
       return;
     }
+    if (!displayName) {
+      setMsg("닉네임을 입력해주세요.");
+      return;
+    }
 
     setLoading(true);
     setMsg("");
 
     try {
+      const isDuplicate = await checkNicknameExists(displayName);
+      if (isDuplicate && user.displayName !== displayName) {
+        setMsg("이미 사용 중인 닉네임입니다.");
+        setLoading(false);
+        return;
+      }
+
       let photoURL = "";
 
       if (file) {
@@ -28,9 +41,18 @@ const ProfileForm = () => {
         photoURL = await getDownloadURL(storageRef);
       }
 
+      // Firebase Auth 업데이트
       await updateProfile(user, {
         displayName,
         photoURL: photoURL || undefined,
+      });
+
+      // Firestore에 유저 정보 저장
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        email: user.email,
+        displayName,
+        photoURL: photoURL || user.photoURL || "",
       });
 
       setMsg("프로필이 성공적으로 업데이트되었습니다!");
@@ -78,9 +100,7 @@ const ProfileForm = () => {
         />
       )}
 
-      <p className="mb-2">
-        현재 닉네임: {auth.currentUser?.displayName}
-      </p>
+      <p className="mb-2">현재 닉네임: {auth.currentUser?.displayName}</p>
     </div>
   );
 };
