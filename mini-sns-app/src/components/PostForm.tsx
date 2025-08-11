@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { auth, db, storage } from "../firebase";
-import { collection, addDoc, Timestamp } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  Timestamp,
+  serverTimestamp,
+} from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const PostForm = () => {
@@ -22,6 +27,7 @@ const PostForm = () => {
 
     try {
       let imageURL = "";
+      let imagePath = "";
 
       if (file) {
         const imageRef = ref(storage, `postImages/${user.uid}_${Date.now()}`);
@@ -31,13 +37,15 @@ const PostForm = () => {
 
       await addDoc(collection(db, "posts"), {
         content,
-        createdAt: Timestamp.now(),
+        createdAt: serverTimestamp(),
         imageURL,
+        imagePath,
         author: {
           uid: user.uid,
           displayName: user.displayName || "익명",
           photoURL: user.photoURL || "",
         },
+        likesCount: 0,
       });
 
       setMsg("게시글이 등록되었습니다.");

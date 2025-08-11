@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { auth } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import PostForm from "../components/PostForm";
+import PostList from "../components/PostLists";
 
 const Home = () => {
   const [userEmail, setUserEmail] = useState<string | null>(null);
