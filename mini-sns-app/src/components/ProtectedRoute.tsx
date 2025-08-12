@@ -1,16 +1,15 @@
+// src/components/ProtectedRoute.tsx
 import React from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
-interface ProtectedRouteProps {
+interface Props {
   children: JSX.Element;
 }
 
-const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ children }: Props) => {
   const { user, loading } = useAuth();
-
-  if (loading) return <div>로딩 중...</div>;
-
+  if (loading) return <div className="p-4">로딩 중...</div>;
   return user ? children : <Navigate to="/login" />;
 };
 

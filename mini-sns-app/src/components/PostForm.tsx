@@ -1,15 +1,8 @@
+// src/components/PostForm.tsx
 import { useState } from "react";
-import { auth, db, storage } from "../firebase";
-import {
-  collection,
-  addDoc,
-  Timestamp,
-  serverTimestamp,
-} from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { addPost } from "../api/posts";
 
 const PostForm = () => {
-  const user = auth.currentUser;
   const [content, setContent] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -17,37 +10,11 @@ const PostForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) {
-      setMsg("로그인이 필요합니다.");
-      return;
-    }
-
     setLoading(true);
     setMsg("");
 
     try {
-      let imageURL = "";
-      let imagePath = "";
-
-      if (file) {
-        const imageRef = ref(storage, `postImages/${user.uid}_${Date.now()}`);
-        await uploadBytes(imageRef, file);
-        imageURL = await getDownloadURL(imageRef);
-      }
-
-      await addDoc(collection(db, "posts"), {
-        content,
-        createdAt: serverTimestamp(),
-        imageURL,
-        imagePath,
-        author: {
-          uid: user.uid,
-          displayName: user.displayName || "익명",
-          photoURL: user.photoURL || "",
-        },
-        likesCount: 0,
-      });
-
+      await addPost(content, file || undefined);
       setMsg("게시글이 등록되었습니다.");
       setContent("");
       setFile(null);
@@ -61,7 +28,7 @@ const PostForm = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="p-4 max-w-md mx-auto space-y-3 border rounded"
+      className="p-4 mb-4 border rounded max-w-2xl mx-auto"
     >
       <textarea
         placeholder="게시글을 입력하세요..."
@@ -76,17 +43,18 @@ const PostForm = () => {
         type="file"
         accept="image/*"
         onChange={(e) => setFile(e.target.files?.[0] || null)}
+        className="mt-2"
       />
 
       <button
         type="submit"
         disabled={loading}
-        className="bg-blue-600 text-white px-4 py-2 rounded w-full"
+        className="mt-3 bg-blue-600 text-white px-4 py-2 rounded"
       >
         {loading ? "업로드 중..." : "게시"}
       </button>
 
-      {msg && <p className="text-sm text-center">{msg}</p>}
+      {msg && <p className="text-sm mt-2">{msg}</p>}
     </form>
   );
 };

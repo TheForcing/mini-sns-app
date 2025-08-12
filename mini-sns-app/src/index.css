@@ -16,6 +16,14 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+/* src/index.css */
+body {
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial;
+  background: #f7fafc;
+  color: #111827;
+  margin: 0;
+}
 
 a {
   font-weight: 500;

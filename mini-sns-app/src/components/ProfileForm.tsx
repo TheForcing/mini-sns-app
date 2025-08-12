@@ -1,15 +1,22 @@
-import { useState } from "react";
+// src/components/ProfileForm.tsx
+import { useEffect, useState } from "react";
 import { auth, storage, db } from "../firebase";
-import { doc, setDoc } from "firebase/firestore";
-import { checkNicknameExists } from "../utils/checkNicknameExists";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { updateProfile } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
 
 const ProfileForm = () => {
   const [displayName, setDisplayName] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
+
+  useEffect(() => {
+    const u = auth.currentUser;
+    if (u) {
+      setDisplayName(u.displayName ?? "");
+    }
+  }, []);
 
   const handleUpdateProfile = async () => {
     const user = auth.currentUser;
@@ -18,7 +25,7 @@ const ProfileForm = () => {
       return;
     }
     if (!displayName) {
-      setMsg("닉네임을 입력해주세요.");
+      setMsg("닉네임을 입력하세요.");
       return;
     }
 
@@ -26,13 +33,6 @@ const ProfileForm = () => {
     setMsg("");
 
     try {
-      const isDuplicate = await checkNicknameExists(displayName);
-      if (isDuplicate && user.displayName !== displayName) {
-        setMsg("이미 사용 중인 닉네임입니다.");
-        setLoading(false);
-        return;
-      }
-
       let photoURL = "";
 
       if (file) {
@@ -41,13 +41,11 @@ const ProfileForm = () => {
         photoURL = await getDownloadURL(storageRef);
       }
 
-      // Firebase Auth 업데이트
       await updateProfile(user, {
         displayName,
         photoURL: photoURL || undefined,
       });
 
-      // Firestore에 유저 정보 저장
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         email: user.email,
@@ -66,6 +64,14 @@ const ProfileForm = () => {
   return (
     <div className="p-4 max-w-md mx-auto">
       <h2 className="text-xl font-bold mb-4">프로필 설정</h2>
+
+      {auth.currentUser?.photoURL && (
+        <img
+          src={auth.currentUser.photoURL}
+          alt="profile"
+          className="w-24 h-24 rounded-full mb-2"
+        />
+      )}
 
       <input
         type="text"
@@ -91,16 +97,6 @@ const ProfileForm = () => {
       </button>
 
       {msg && <p className="mt-2 text-sm">{msg}</p>}
-
-      {auth.currentUser?.photoURL && (
-        <img
-          src={auth.currentUser.photoURL}
-          alt="프로필 사진"
-          className="w-24 h-24 rounded-full mb-2"
-        />
-      )}
-
-      <p className="mb-2">현재 닉네임: {auth.currentUser?.displayName}</p>
     </div>
   );
 };

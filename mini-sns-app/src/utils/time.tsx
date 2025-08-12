@@ -1,3 +1,4 @@
+// src/utils/time.ts
 export const formatRelativeTime = (timestamp: any): string => {
   const date = timestamp?.toDate?.() ?? new Date(timestamp);
   const now = new Date();

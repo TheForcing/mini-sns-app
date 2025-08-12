@@ -1,8 +1,9 @@
+// src/components/PostItem.tsx
 import React, { useEffect, useState } from "react";
 import { auth, db, storage } from "../firebase";
-import { doc, getDoc, deleteDoc, onSnapshot } from "firebase/firestore";
+import { doc, getDoc, onSnapshot, deleteDoc } from "firebase/firestore";
 import { ref, deleteObject } from "firebase/storage";
-import { toggleLike } from "../utils/like";
+import { toggleLike } from "../api/likes";
 import Comments from "./Comments";
 import { Link } from "react-router-dom";
 import { formatRelativeTime } from "../utils/time";
@@ -24,7 +25,6 @@ const PostItem = ({ post }: { post: Post }) => {
   const [showComments, setShowComments] = useState(false);
 
   useEffect(() => {
-    // 실시간 likesCount 업데이트 (옵션)
     const unsub = onSnapshot(doc(db, "posts", post.id), (snap) => {
       const data = snap.data() as any;
       setLikesCount(data?.likesCount ?? 0);
@@ -33,7 +33,6 @@ const PostItem = ({ post }: { post: Post }) => {
   }, [post.id]);
 
   useEffect(() => {
-    // 현재 사용자가 해당 포스트에 좋아요를 눌렀는지 조회 (초기)
     if (!user) return setLiked(false);
     const likeRef = doc(db, "posts", post.id, "likes", user.uid);
     getDoc(likeRef).then((snap) => setLiked(snap.exists()));
@@ -44,7 +43,6 @@ const PostItem = ({ post }: { post: Post }) => {
     try {
       const res = await toggleLike(post.id, user.uid);
       setLiked(res.liked);
-      // likesCount는 트랜잭션에서 업데이트되므로 onSnapshot이 반영해 줄 것
     } catch (err: any) {
       console.error(err);
       alert("좋아요 처리 중 오류가 발생했습니다.");
@@ -54,20 +52,14 @@ const PostItem = ({ post }: { post: Post }) => {
   const handleDeletePost = async () => {
     if (!user) return;
     if (user.uid !== post.author.uid) return alert("삭제 권한이 없습니다.");
-
     const ok = confirm("게시물을 삭제하시겠습니까?");
     if (!ok) return;
 
     try {
-      // 포스트 문서 삭제
+      // delete post doc (Cloud Function recommended for cascading deletes)
       await deleteDoc(doc(db, "posts", post.id));
-
-      // (선택) 스토리지에 저장된 이미지도 삭제하려면 imagePath가 필요
       if (post.imagePath) {
-        const imgRef = ref(storage, post.imagePath);
-        await deleteObject(imgRef).catch(() => {
-          /* 이미지가 없거나 권한 문제 무시 */
-        });
+        await deleteObject(ref(storage, post.imagePath)).catch(() => {});
       }
     } catch (err: any) {
       console.error(err);
