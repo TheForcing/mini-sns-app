@@ -7,6 +7,7 @@ import Profile from "./pages/Profile";
 import UserProfile from "./pages/UserProfile";
 import { auth } from "./firebase";
 import { signOut } from "firebase/auth";
+import NotificationList from "./components/NotificationList";
 
 function App() {
   const handleLogout = async () => {
@@ -38,6 +39,7 @@ function App() {
           <Route path="/user/:uid" element={<UserProfile />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/notifications" element={<NotificationList />} />
         </Routes>
       </main>
     </BrowserRouter>

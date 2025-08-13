@@ -66,6 +66,15 @@ const PostItem = ({ post }: { post: Post }) => {
       alert("삭제 중 오류가 발생했습니다.");
     }
   };
+  const handleLike = async () => {
+    // 좋아요 로직 실행...
+    await sendNotification({
+      recipientId: post.author.uid,
+      senderId: auth.currentUser!.uid,
+      type: "like",
+      postId: post.id,
+    });
+  };
 
   return (
     <div className="border rounded p-4 shadow-sm">
