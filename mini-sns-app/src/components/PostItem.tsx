@@ -5,8 +5,9 @@ import { doc, getDoc, onSnapshot, deleteDoc } from "firebase/firestore";
 import { ref, deleteObject } from "firebase/storage";
 import { toggleLike } from "../api/likes";
 import Comments from "./Comments";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { formatRelativeTime } from "../utils/time";
+import { sendNotification } from "../utils/notification";
 
 type Post = {
   id: string;
@@ -20,6 +21,7 @@ type Post = {
 
 const PostItem = ({ post }: { post: Post }) => {
   const user = auth.currentUser;
+  const navigate = useNavigate();
   const [likesCount, setLikesCount] = useState<number>(post.likesCount || 0);
   const [liked, setLiked] = useState<boolean>(false);
   const [showComments, setShowComments] = useState(false);
@@ -94,7 +96,6 @@ const PostItem = ({ post }: { post: Post }) => {
           {formatRelativeTime(post.createdAt)}
         </span>
       </div>
-
       <p className="whitespace-pre-wrap">{post.content}</p>
       {post.imageURL && (
         <img
@@ -103,6 +104,20 @@ const PostItem = ({ post }: { post: Post }) => {
           className="mt-2 max-h-64 object-cover rounded"
         />
       )}
+      <div className="p-3 border-b">
+        <p>{post.content}</p>
+        <div className="flex gap-2 mt-1 text-sm text-blue-500">
+          {post.hashtags?.map((tag: string) => (
+            <span
+              key={tag}
+              onClick={() => navigate(`/search?tag=${tag}`)}
+              className="cursor-pointer hover:underline"
+            >
+              #{tag}
+            </span>
+          ))}
+        </div>
+      </div>
 
       <div className="flex items-center gap-3 mt-3">
         <button onClick={handleToggleLike} className="flex items-center gap-2">
@@ -126,7 +141,6 @@ const PostItem = ({ post }: { post: Post }) => {
           </button>
         )}
       </div>
-
       {showComments && (
         <Comments postId={post.id} postAuthorUid={post.author.uid} />
       )}
