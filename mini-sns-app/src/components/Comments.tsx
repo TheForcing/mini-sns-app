@@ -24,6 +24,7 @@ interface CommentType {
   createdAt: any;
   replies?: ReplyType[];
 }
+
 interface ReplyType {
   id: string;
   content: string;
@@ -35,21 +36,22 @@ interface ReplyType {
   createdAt: any;
 }
 
-const Comments = ({
-  postId,
-  currentUserId,
-  postAuthorUid,
-}: {
+interface CommentsProps {
   postId: string;
   currentUserId: string;
   postAuthorUid: string;
+}
+
+const Comments: React.FC<CommentsProps> = ({
+  postId,
+  currentUserId,
+  postAuthorUid,
 }) => {
   const [comments, setComments] = useState<CommentType[]>([]);
   const [text, setText] = useState("");
   const user = auth.currentUser;
 
   useEffect(() => {
-    // 댓글 실시간 구독
     const q = query(
       collection(db, "posts", postId, "comments"),
       orderBy("createdAt", "asc")
@@ -106,7 +108,7 @@ const Comments = ({
     if (user.uid !== commentAuthorUid && user.uid !== postAuthorUid) {
       return alert("삭제 권한이 없습니다.");
     }
-    const ok = confirm("댓글을 삭제하시겠습니까?");
+    const ok = window.confirm("댓글을 삭제하시겠습니까?");
     if (!ok) return;
     await deleteDoc(doc(db, "posts", postId, "comments", commentId));
   };
@@ -156,14 +158,16 @@ const Comments = ({
   );
 };
 
-const CommentItem = ({
-  postId,
-  comment,
-  currentUserId,
-}: {
+interface CommentItemProps {
   postId: string;
   comment: CommentType;
   currentUserId: string;
+}
+
+const CommentItem: React.FC<CommentItemProps> = ({
+  postId,
+  comment,
+  currentUserId,
 }) => {
   const [replyText, setReplyText] = useState("");
   const [showReply, setShowReply] = useState(false);
