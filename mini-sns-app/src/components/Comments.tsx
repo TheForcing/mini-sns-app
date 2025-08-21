@@ -104,7 +104,6 @@ const Comments: React.FC<CommentsProps> = ({
 
   const handleDelete = async (commentId: string, commentAuthorUid: string) => {
     if (!user) return;
-    // 댓글 작성자 또는 게시물 작성자만 삭제 허용
     if (user.uid !== commentAuthorUid && user.uid !== postAuthorUid) {
       return alert("삭제 권한이 없습니다.");
     }
@@ -114,38 +113,61 @@ const Comments: React.FC<CommentsProps> = ({
   };
 
   return (
-    <div className="mt-3">
-      <form onSubmit={handleAdd} className="flex gap-2">
+    <div className="mt-6 bg-white rounded-lg shadow p-5">
+      <form onSubmit={handleAdd} className="flex gap-2 items-center">
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
-          className="flex-1 border p-2 rounded"
+          className="flex-1 border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-200 transition"
           placeholder="댓글을 입력하세요"
         />
-        <button className="bg-blue-600 text-white px-3 py-1 rounded">
+        <button
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition"
+          type="submit"
+        >
           전송
         </button>
       </form>
-      <ul className="mt-3 space-y-2">
+      <ul className="mt-5 space-y-4">
         {comments.map((c) => (
-          <li key={c.id} className="border p-2 rounded">
+          <li
+            key={c.id}
+            className="border border-gray-200 rounded-lg p-4 bg-gray-50 hover:shadow transition"
+          >
             <div className="flex items-center justify-between">
-              <div>
-                <div className="font-semibold">{c.author.displayName}</div>
-                <div className="text-sm text-gray-500">
-                  {formatRelativeTime(c.createdAt)}
+              <div className="flex items-center gap-2">
+                {c.author.photoURL ? (
+                  <img
+                    src={c.author.photoURL}
+                    alt="profile"
+                    className="w-8 h-8 rounded-full object-cover border"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 text-xs font-bold">
+                    {c.author.displayName?.[0] || "?"}
+                  </div>
+                )}
+                <div>
+                  <div className="font-semibold text-gray-800">
+                    {c.author.displayName}
+                  </div>
+                  <div className="text-xs text-gray-400">
+                    {formatRelativeTime(c.createdAt)}
+                  </div>
                 </div>
               </div>
               {(user?.uid === c.author.uid || user?.uid === postAuthorUid) && (
                 <button
                   onClick={() => handleDelete(c.id, c.author.uid)}
-                  className="text-sm text-red-500"
+                  className="text-xs text-red-500 hover:underline"
                 >
                   삭제
                 </button>
               )}
             </div>
-            <p className="mt-2 whitespace-pre-wrap">{c.content}</p>
+            <p className="mt-3 mb-1 whitespace-pre-wrap text-gray-700">
+              {c.content}
+            </p>
             <CommentItem
               postId={postId}
               comment={c}
@@ -193,10 +215,10 @@ const CommentItem: React.FC<CommentItemProps> = ({
   };
 
   return (
-    <div className="mt-2 ml-4">
+    <div className="mt-2 ml-8">
       <button
         onClick={() => setShowReply(!showReply)}
-        className="text-blue-500 text-sm mt-1"
+        className="text-blue-500 text-xs hover:underline"
       >
         답글 달기
       </button>
@@ -206,24 +228,35 @@ const CommentItem: React.FC<CommentItemProps> = ({
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
             placeholder="답글 입력"
-            className="border p-1 flex-1"
+            className="border border-gray-300 p-1 flex-1 rounded focus:outline-none focus:ring-2 focus:ring-green-200 transition"
           />
           <button
             onClick={handleAddReply}
-            className="bg-green-500 text-white px-2 rounded"
+            className="bg-green-500 hover:bg-green-600 text-white px-2 rounded transition"
           >
             등록
           </button>
         </div>
       )}
       {comment.replies && comment.replies.length > 0 && (
-        <div className="ml-6 mt-2 space-y-1">
+        <div className="ml-4 mt-2 space-y-1">
           {comment.replies.map((r) => (
-            <div key={r.id} className="text-sm">
-              ↳ {r.content}{" "}
-              <span className="text-gray-500">
-                ({r.author?.displayName || r.author?.uid})
+            <div key={r.id} className="flex items-center gap-2 text-sm">
+              {r.author.photoURL ? (
+                <img
+                  src={r.author.photoURL}
+                  alt="reply-profile"
+                  className="w-6 h-6 rounded-full object-cover border"
+                />
+              ) : (
+                <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 text-xs font-bold">
+                  {r.author.displayName?.[0] || "?"}
+                </div>
+              )}
+              <span className="font-medium text-gray-700">
+                {r.author.displayName}
               </span>
+              <span className="text-gray-500">{r.content}</span>
             </div>
           ))}
         </div>

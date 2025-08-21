@@ -20,26 +20,46 @@ const Home = () => {
   };
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl">🔥 SNS 홈</h1>
-      {userEmail ? (
-        <div className="mt-4">
-          <p>로그인 중: {userEmail}</p>
-          <button
-            onClick={logout}
-            className="bg-red-500 text-white px-3 py-1 rounded mt-2"
-          >
-            로그아웃
-          </button>
-        </div>
-      ) : (
-        <p className="mt-4 text-gray-600">로그인되어 있지 않습니다.</p>
-      )}
-      <div className="p-4">
-        <h2 className="text-xl font-bold mb-4">📌 새 게시글 작성</h2>
-        <PostForm />
-        <hr className="my-4" />
-        <PostList />
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="w-full max-w-xl space-y-8">
+        <header className="bg-white rounded-lg shadow flex items-center justify-between px-6 py-4">
+          <h1 className="text-3xl font-bold text-blue-700 flex items-center gap-2">
+            <span role="img" aria-label="fire">
+              🔥
+            </span>{" "}
+            SNS 홈
+          </h1>
+          {userEmail ? (
+            <div className="flex items-center gap-4">
+              <span className="text-gray-700 text-sm">
+                로그인: <b>{userEmail}</b>
+              </span>
+              <button
+                onClick={logout}
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded shadow transition"
+              >
+                로그아웃
+              </button>
+            </div>
+          ) : (
+            <span className="text-gray-500 text-sm">
+              로그인되어 있지 않습니다.
+            </span>
+          )}
+        </header>
+        <section className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+            <span role="img" aria-label="pin">
+              📌
+            </span>{" "}
+            새 게시글 작성
+          </h2>
+          <PostForm />
+        </section>
+        <section className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold mb-4">게시글 목록</h2>
+          <PostList />
+        </section>
       </div>
     </div>
   );
