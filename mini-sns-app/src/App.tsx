@@ -10,6 +10,9 @@ import { signOut } from "firebase/auth";
 import NotificationList from "./components/NotificationList";
 import FollowList from "./components/FollowList";
 import SearchBar from "./components/SearchBar";
+import Layout from "./Layout";
+import PostPage from "./pages/PostPages";
+import Feed from "./pages/Feed";
 
 function App() {
   const handleLogout = async () => {
@@ -28,6 +31,7 @@ function App() {
           <button
             onClick={handleLogout}
             className="ml-auto text-sm text-red-500"
+            type="button"
           >
             Logout
           </button>
@@ -36,22 +40,29 @@ function App() {
 
       <main>
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/profile" element={<Profile />} />
+          {/* Layout으로 감싸는 라우트 구조 개선 */}
           <Route
-            path="/profile/:id/followers"
             element={
-              <FollowList
-                type="followers"
-                userId={window.location.pathname.split("/")[2] || ""}
-              />
+              <Layout children={undefined}>
+                {/* children이 들어갈 위치 */}
+              </Layout>
             }
-          />
-          <Route path="/user/:uid" element={<UserProfile />} />
+          >
+            <Route path="/" element={<Home />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route
+              path="/profile/:id/followers"
+              element={<FollowList type="followers" userId={""} />}
+            />
+            <Route path="/user/:uid" element={<UserProfile />} />
+            <Route path="/notifications" element={<NotificationList />} />
+            <Route path="/search" element={<SearchBar />} />
+            <Route path="/feed" element={<Feed />} />
+            <Route path="/post/:postId" element={<PostPage />} />
+          </Route>
+          {/* 레이아웃 없이 보여줄 라우트 */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/notifications" element={<NotificationList />} />
-          <Route path="/search" element={<SearchBar />} />
         </Routes>
       </main>
     </BrowserRouter>
