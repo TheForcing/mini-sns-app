@@ -13,12 +13,17 @@ import SearchBar from "./components/SearchBar";
 import Layout from "./Layout";
 import PostPage from "./pages/PostPages";
 import Feed from "./pages/Feed";
+import { useEffect } from "react";
+import { seedData } from "./utils/seedData";
 
 function App() {
   const handleLogout = async () => {
     await signOut(auth);
     alert("로그아웃되었습니다.");
   };
+  useEffect(() => {
+    seedData();
+  }, []);
 
   return (
     <BrowserRouter>
@@ -41,13 +46,7 @@ function App() {
       <main>
         <Routes>
           {/* Layout으로 감싸는 라우트 구조 개선 */}
-          <Route
-            element={
-              <Layout children={undefined}>
-                {/* children이 들어갈 위치 */}
-              </Layout>
-            }
-          >
+          <Route element={<Layout>{/* children이 들어갈 위치 */}</Layout>}>
             <Route path="/" element={<Home />} />
             <Route path="/profile" element={<Profile />} />
             <Route

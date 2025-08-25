@@ -1,46 +1,20 @@
-import { ReactNode } from "react";
-import { Link } from "react-router-dom";
+import { Outlet } from "react-router-dom";
+import NavBar from "./NavBar";
 
-interface LayoutProps {
-  children: ReactNode;
-}
-
-const Layout = ({ children }: LayoutProps) => {
+const Layout = () => {
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="bg-white shadow-md">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
-          <Link to="/" className="text-2xl font-bold text-blue-600">
-            MySNS
-          </Link>
-          <nav className="space-x-6">
-            <Link to="/" className="hover:text-blue-600">
-              홈
-            </Link>
-            <Link to="/profile" className="hover:text-blue-600">
-              프로필
-            </Link>
-            <Link to="/search" className="hover:text-blue-600">
-              검색
-            </Link>
-            <Link to="/admin" className="hover:text-blue-600">
-              관리자
-            </Link>
-          </nav>
-        </div>
-      </header>
+    <div className="flex flex-col min-h-screen bg-gray-100">
+      {/* 상단 네비게이션 */}
+      <NavBar />
 
-      {/* Main */}
-      <main className="flex-1 max-w-5xl mx-auto px-6 py-8 w-full">
-        {children}
+      {/* 메인 컨텐츠 */}
+      <main className="flex-1 container mx-auto px-4 py-6">
+        <Outlet />
       </main>
 
-      {/* Footer */}
-      <footer className="bg-gray-100 py-4 mt-8">
-        <div className="max-w-5xl mx-auto px-6 text-center text-gray-500">
-          © {new Date().getFullYear()} MySNS. All rights reserved.
-        </div>
+      {/* 푸터 */}
+      <footer className="bg-gray-800 text-gray-300 text-center py-4 text-sm">
+        © {new Date().getFullYear()} MySNS. All rights reserved.
       </footer>
     </div>
   );

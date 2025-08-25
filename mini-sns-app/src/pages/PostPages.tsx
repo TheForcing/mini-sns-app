@@ -1,128 +1,237 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   doc,
-  getDoc,
+  onSnapshot,
+  updateDoc,
+  arrayUnion,
+  arrayRemove,
+  deleteDoc,
   collection,
   addDoc,
+  serverTimestamp,
   query,
-  onSnapshot,
   orderBy,
-  deleteDoc,
+  onSnapshot as onSnapshotCol,
 } from "firebase/firestore";
 import { db, auth } from "../firebase";
-import { Button, Input, TextArea } from "../components/UI";
+import { User } from "firebase/auth";
+import { formatDistanceToNow } from "../utils/formatDate";
 
 interface Post {
   id: string;
   content: string;
+  createdAt: any;
+  authorId: string;
   authorName: string;
-  createdAt: string;
+  authorPhoto?: string;
+  likes: string[];
 }
 
 interface Comment {
   id: string;
-  content: string;
+  text: string;
+  createdAt: any;
+  authorId: string;
   authorName: string;
-  createdAt: string;
+  authorPhoto?: string;
 }
 
 const PostPage = () => {
-  const { postId } = useParams();
+  const { postId } = useParams<{ postId: string }>();
+  const navigate = useNavigate();
+
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
+  const [user, setUser] = useState<User | null>(auth.currentUser);
 
-  // 게시글 불러오기
+  // ✅ 게시글 불러오기
   useEffect(() => {
     if (!postId) return;
-
-    const fetchPost = async () => {
-      const docRef = doc(db, "posts", postId);
-      const snapshot = await getDoc(docRef);
-      if (snapshot.exists()) {
-        setPost({ id: snapshot.id, ...snapshot.data() } as Post);
+    const unsub = onSnapshot(doc(db, "posts", postId), (docSnap) => {
+      if (docSnap.exists()) {
+        setPost({ id: docSnap.id, ...docSnap.data() } as Post);
       }
-    };
-
-    fetchPost();
+    });
+    return () => unsub();
   }, [postId]);
 
-  // 댓글 실시간 불러오기
+  // ✅ 댓글 불러오기
   useEffect(() => {
     if (!postId) return;
-
     const q = query(
       collection(db, "posts", postId, "comments"),
       orderBy("createdAt", "asc")
     );
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsub = onSnapshotCol(q, (snapshot) => {
       setComments(
-        snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Comment[]
+        snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Comment))
       );
     });
-
-    return () => unsubscribe();
+    return () => unsub();
   }, [postId]);
 
-  // 댓글 작성
-  const handleAddComment = async () => {
-    if (!auth.currentUser || !postId) return;
-    if (!newComment.trim()) return;
+  // ✅ 좋아요 토글
+  const toggleLike = async () => {
+    if (!user || !post) return;
+    const postRef = doc(db, "posts", post.id);
+
+    if (post.likes.includes(user.uid)) {
+      await updateDoc(postRef, { likes: arrayRemove(user.uid) });
+    } else {
+      await updateDoc(postRef, { likes: arrayUnion(user.uid) });
+    }
+  };
+
+  // ✅ 댓글 작성
+  const handleAddComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !newComment.trim() || !postId) return;
 
     await addDoc(collection(db, "posts", postId, "comments"), {
-      content: newComment,
-      authorName: auth.currentUser.displayName || "익명",
-      createdAt: new Date().toISOString(),
+      text: newComment,
+      createdAt: serverTimestamp(),
+      authorId: user.uid,
+      authorName: user.displayName || "익명",
+      authorPhoto: user.photoURL || "",
     });
 
     setNewComment("");
   };
 
-  // 댓글 삭제
-  const handleDeleteComment = async (commentId: string) => {
-    if (!auth.currentUser || !postId) return;
-
-    const commentRef = doc(db, "posts", postId, "comments", commentId);
-    await deleteDoc(commentRef);
+  // ✅ 게시글 삭제
+  const handleDeletePost = async () => {
+    if (!user || !post) return;
+    if (user.uid !== post.authorId) {
+      alert("삭제 권한이 없습니다.");
+      return;
+    }
+    await deleteDoc(doc(db, "posts", post.id));
+    alert("게시글이 삭제되었습니다.");
+    navigate("/feed");
   };
 
-  if (!post) return <p>게시글을 불러오는 중...</p>;
+  // ✅ 댓글 삭제
+  const handleDeleteComment = async (commentId: string, authorId: string) => {
+    if (!user || !postId) return;
+    if (user.uid !== authorId && user.uid !== post?.authorId) {
+      alert("삭제 권한이 없습니다.");
+      return;
+    }
+    await deleteDoc(doc(db, "posts", postId, "comments", commentId));
+  };
+
+  if (!post)
+    return <p className="text-center mt-10">게시글을 불러오는 중...</p>;
 
   return (
-    <div>
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 className="text-xl font-bold mb-2">{post.authorName}</h2>
-        <p className="text-gray-700 mb-4">{post.content}</p>
-        <span className="text-sm text-gray-400">{post.createdAt}</span>
+    <div className="max-w-2xl mx-auto p-6 bg-white shadow rounded-lg mt-6">
+      {/* 작성자 영역 */}
+      <div className="flex items-center mb-4">
+        <img
+          src={post.authorPhoto || "/default.png"}
+          alt="author"
+          className="w-10 h-10 rounded-full mr-3 cursor-pointer"
+          onClick={() => navigate(`/profile/${post.authorId}`)}
+        />
+        <div>
+          <p
+            className="font-bold cursor-pointer"
+            onClick={() => navigate(`/profile/${post.authorId}`)}
+          >
+            {post.authorName}
+          </p>
+          <p className="text-sm text-gray-500">
+            {post.createdAt?.toDate
+              ? formatDistanceToNow(post.createdAt.toDate(), {
+                  addSuffix: true,
+                })
+              : "방금 전"}
+          </p>
+        </div>
+      </div>
+
+      {/* 게시글 본문 */}
+      <p className="text-gray-800 mb-4">{post.content}</p>
+
+      {/* 좋아요 / 삭제 */}
+      <div className="flex items-center gap-4 mb-6">
+        <button
+          onClick={toggleLike}
+          className={`px-3 py-1 rounded-lg ${
+            user && post.likes.includes(user.uid)
+              ? "bg-red-500 text-white"
+              : "bg-gray-200"
+          }`}
+        >
+          ❤️ {post.likes.length}
+        </button>
+
+        {user?.uid === post.authorId && (
+          <button
+            onClick={handleDeletePost}
+            className="px-3 py-1 bg-red-500 text-white rounded-lg"
+          >
+            게시글 삭제
+          </button>
+        )}
       </div>
 
       {/* 댓글 목록 */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold mb-4">댓글</h3>
-        <div className="space-y-4 mb-4">
-          {comments.map((c) => (
-            <div key={c.id} className="border-b pb-2">
-              <p className="font-medium">{c.authorName}</p>
-              <p>{c.content}</p>
-              <span className="text-sm text-gray-400">{c.createdAt}</span>
-              <Button onClick={() => handleDeleteComment(c.id)}>삭제</Button>
+      <div>
+        <h3 className="font-bold mb-3">댓글</h3>
+        {comments.map((c) => (
+          <div key={c.id} className="flex items-start mb-3">
+            <img
+              src={c.authorPhoto || "/default.png"}
+              alt="author"
+              className="w-8 h-8 rounded-full mr-2"
+            />
+            <div className="bg-gray-100 p-2 rounded-lg flex-1">
+              <div className="flex justify-between items-center">
+                <p className="font-bold text-sm">{c.authorName}</p>
+                {user &&
+                  (user.uid === c.authorId || user.uid === post.authorId) && (
+                    <button
+                      onClick={() => handleDeleteComment(c.id, c.authorId)}
+                      className="text-red-500 text-xs"
+                    >
+                      삭제
+                    </button>
+                  )}
+              </div>
+              <p className="text-sm">{c.text}</p>
+              <p className="text-xs text-gray-500">
+                {c.createdAt?.toDate
+                  ? formatDistanceToNow(c.createdAt.toDate(), {
+                      addSuffix: true,
+                    })
+                  : "방금 전"}
+              </p>
             </div>
-          ))}
-        </div>
-
-        {/* 댓글 작성 */}
-        <div className="flex space-x-2">
-          <Input
-            placeholder="댓글을 입력하세요..."
-            value={newComment}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setNewComment(e.target.value)
-            }
-          />
-          <Button onClick={handleAddComment}>등록</Button>
-        </div>
+          </div>
+        ))}
       </div>
+
+      {/* 댓글 작성 */}
+      {user && (
+        <form onSubmit={handleAddComment} className="mt-4 flex gap-2">
+          <input
+            type="text"
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="댓글을 입력하세요..."
+            className="flex-1 border p-2 rounded-lg"
+          />
+          <button
+            type="submit"
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+          >
+            등록
+          </button>
+        </form>
+      )}
     </div>
   );
 };
