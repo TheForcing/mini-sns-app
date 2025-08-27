@@ -1,6 +1,6 @@
 // src/components/PostForm.tsx
 import { useState } from "react";
-import { addPost } from "../../../api/posts";
+import { CreatePost } from "../../post/hooks/createPost";
 
 const PostForm = () => {
   const [content, setContent] = useState("");
@@ -14,7 +14,7 @@ const PostForm = () => {
     setMsg("");
 
     try {
-      await addPost(content, file || undefined);
+      CreatePost();
       setMsg("게시글이 등록되었습니다.");
       setContent("");
       setFile(null);

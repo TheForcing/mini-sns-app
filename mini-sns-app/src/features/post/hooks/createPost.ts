@@ -1,18 +1,31 @@
+import { useState } from "react";
 import { db } from "../../../firebase";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { extractHashtags } from "../../../utils/parseHashtags";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { useAuth } from "../../auth/hooks/useAuth";
 
-export const createPost = async (authorId: string, content: string) => {
-  try {
-    const hashtags = extractHashtags(content);
+export const CreatePost = () => {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
 
-    await addDoc(collection(db, "posts"), {
-      authorId,
-      content,
-      hashtags,
-      createdAt: serverTimestamp(),
-    });
-  } catch (error) {
-    console.error("게시글 작성 실패:", error);
-  }
+  const createPost = async (content: string, hashtags: string[] = []) => {
+    if (!user) throw new Error("로그인이 필요합니다.");
+
+    setLoading(true);
+
+    try {
+      await addDoc(collection(db, "posts"), {
+        content,
+        hashtags,
+        authorId: user.uid,
+        authorName: user.displayName || "익명",
+        createdAt: serverTimestamp(),
+        likes: 0,
+        commentsCount: 0,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { createPost, loading };
 };
