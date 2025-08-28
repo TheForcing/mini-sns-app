@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { auth } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import PostForm from "../components/PostForm";
-import PostList from "../components/PostLists";
+import PostForm from "../features/post/components/PostForm";
+import PostLists from "../features/post/components/PostLists";
 
 const Home = () => {
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -58,7 +58,7 @@ const Home = () => {
         </section>
         <section className="bg-white rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold mb-4">게시글 목록</h2>
-          <PostList />
+          <PostLists />
         </section>
       </div>
     </div>

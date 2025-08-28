@@ -2,18 +2,18 @@
 import Login from "../features/auth/components/Login";
 import { useAuth } from "../features/auth/hooks/useAuth";
 // For Next.js 13+ app directory, use the following:
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 
 // If you are using the pages directory and want to fix the type error, install types:
 import { useEffect } from "react";
 
 const LoginPage = () => {
   const { user, loading } = useAuth();
-  const router = useRouter();
+  const router = useNavigate();
 
   useEffect(() => {
     if (!loading && user) {
-      router.push("/"); // 로그인 성공 시 메인으로 이동
+      router("/"); // 로그인 성공 시 메인으로 이동
     }
   }, [user, loading, router]);
 
@@ -25,7 +25,7 @@ const LoginPage = () => {
         <p className="text-center text-sm text-gray-500 mt-4">
           아직 계정이 없으신가요?{" "}
           <span
-            onClick={() => router.push("/register")}
+            onClick={() => router("/register")}
             className="text-blue-500 cursor-pointer"
           >
             회원가입

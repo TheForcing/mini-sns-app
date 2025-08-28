@@ -144,9 +144,7 @@ const PostPage = () => {
           </p>
           <p className="text-sm text-gray-500">
             {post.createdAt?.toDate
-              ? formatDistanceToNow(post.createdAt.toDate(), {
-                  addSuffix: true,
-                })
+              ? formatDistanceToNow(post.createdAt.toDate())
               : "방금 전"}
           </p>
         </div>
@@ -204,9 +202,7 @@ const PostPage = () => {
               <p className="text-sm">{c.text}</p>
               <p className="text-xs text-gray-500">
                 {c.createdAt?.toDate
-                  ? formatDistanceToNow(c.createdAt.toDate(), {
-                      addSuffix: true,
-                    })
+                  ? formatDistanceToNow(c.createdAt.toDate())
                   : "방금 전"}
               </p>
             </div>

@@ -10,7 +10,7 @@ import {
   QueryDocumentSnapshot,
 } from "firebase/firestore";
 import { db } from "../firebase";
-import PostCard from "../components/PostCard";
+import PostCard from "../features/post/components/PostCard";
 import { formatDistanceToNow } from "../utils/formatDate";
 
 interface Post {

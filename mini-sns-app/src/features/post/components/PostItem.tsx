@@ -4,7 +4,7 @@ import { auth, db, storage } from "../../../firebase";
 import { doc, getDoc, onSnapshot, deleteDoc } from "firebase/firestore";
 import { ref, deleteObject } from "firebase/storage";
 import { toggleLike } from "../../../api/toggleLike";
-import Comments from "../../comments/components/Comments";
+import Comment from "../../comments/components/Comment";
 import { Link, useNavigate } from "react-router-dom";
 import { formatRelativeTime } from "../../../utils/time";
 import { sendNotification } from "../../notification/hooks/notification";
@@ -143,7 +143,7 @@ const PostItem = ({ post }: { post: Post }) => {
         )}
       </div>
       {showComments && user && (
-        <Comments
+        <Comment
           postId={post.id}
           currentUserId={user.uid}
           postAuthorUid={post.author.uid}

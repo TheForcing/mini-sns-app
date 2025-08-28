@@ -8,6 +8,10 @@ import {
   serverTimestamp,
   deleteDoc,
   doc,
+  getDocs,
+  updateDoc,
+  arrayUnion,
+  arrayRemove,
 } from "firebase/firestore";
 import { auth, db } from "../../../firebase";
 import { formatRelativeTime } from "../../../utils/time";
@@ -20,8 +24,10 @@ interface CommentType {
     displayName: string;
     photoURL: string;
   };
-  createdAt: any | null;
-  replies: ReplyType[];
+  createdAt: any;
+  likes?: number;
+  likedBy?: string[];
+  replies?: ReplyType[];
 }
 
 interface ReplyType {
@@ -32,7 +38,9 @@ interface ReplyType {
     displayName: string;
     photoURL: string;
   };
-  createdAt: any | null;
+  createdAt: any;
+  likes?: number;
+  likedBy?: string[];
 }
 
 interface CommentsProps {
@@ -41,7 +49,7 @@ interface CommentsProps {
   postAuthorUid: string;
 }
 
-const Comments: React.FC<CommentsProps> = ({
+const Comment: React.FC<CommentsProps> = ({
   postId,
   currentUserId,
   postAuthorUid,
@@ -55,31 +63,28 @@ const Comments: React.FC<CommentsProps> = ({
       collection(db, "posts", postId, "comments"),
       orderBy("createdAt", "asc")
     );
+    const unsub = onSnapshot(q, async (snapshot) => {
+      const commentList: CommentType[] = [];
+      for (const docSnap of snapshot.docs) {
+        const comment = { id: docSnap.id, ...docSnap.data() } as CommentType;
 
-    const unsub = onSnapshot(q, (snapshot) => {
-      const commentList: CommentType[] = snapshot.docs.map((docSnap) => ({
-        id: docSnap.id,
-        replies: [],
-        ...docSnap.data(),
-      })) as CommentType[];
-
-      // 각 댓글의 replies 실시간 구독
-      commentList.forEach((comment) => {
-        const repliesQ = query(
-          collection(db, "posts", postId, "comments", comment.id, "replies"),
-          orderBy("createdAt", "asc")
+        // 답글 가져오기
+        const repliesCol = collection(
+          db,
+          "posts",
+          postId,
+          "comments",
+          docSnap.id,
+          "replies"
         );
-        onSnapshot(repliesQ, (repliesSnap) => {
-          const replies = repliesSnap.docs.map((r) => ({
-            id: r.id,
-            ...r.data(),
-          })) as ReplyType[];
-          setComments((prev) =>
-            prev.map((c) => (c.id === comment.id ? { ...c, replies } : c))
-          );
-        });
-      });
+        const repliesSnap = await getDocs(repliesCol);
+        comment.replies = repliesSnap.docs.map((r) => ({
+          id: r.id,
+          ...r.data(),
+        })) as ReplyType[];
 
+        commentList.push(comment);
+      }
       setComments(commentList);
     });
 
@@ -88,7 +93,7 @@ const Comments: React.FC<CommentsProps> = ({
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return alert("로그인이 필요합니다.");
+    if (!user) return alert("로그인 필요");
     if (!text.trim()) return;
 
     await addDoc(collection(db, "posts", postId, "comments"), {
@@ -99,6 +104,8 @@ const Comments: React.FC<CommentsProps> = ({
         displayName: user.displayName || "익명",
         photoURL: user.photoURL || "",
       },
+      likes: 0,
+      likedBy: [],
     });
 
     setText("");
@@ -116,7 +123,6 @@ const Comments: React.FC<CommentsProps> = ({
 
   return (
     <div className="mt-6 bg-white rounded-lg shadow p-5">
-      {/* 댓글 입력 */}
       <form onSubmit={handleAdd} className="flex gap-2 items-center">
         <input
           value={text}
@@ -131,8 +137,6 @@ const Comments: React.FC<CommentsProps> = ({
           전송
         </button>
       </form>
-
-      {/* 댓글 리스트 */}
       <ul className="mt-5 space-y-4">
         {comments.map((c) => (
           <li
@@ -173,6 +177,30 @@ const Comments: React.FC<CommentsProps> = ({
             <p className="mt-3 mb-1 whitespace-pre-wrap text-gray-700">
               {c.content}
             </p>
+
+            {/* 좋아요 버튼 */}
+            <button
+              onClick={async () => {
+                if (!user) return alert("로그인 필요");
+                const ref = doc(db, "posts", postId, "comments", c.id);
+                const alreadyLiked = c.likedBy?.includes(user.uid);
+
+                await updateDoc(ref, {
+                  likes: alreadyLiked ? (c.likes || 0) - 1 : (c.likes || 0) + 1,
+                  likedBy: alreadyLiked
+                    ? arrayRemove(user.uid)
+                    : arrayUnion(user.uid),
+                });
+              }}
+              className={`text-sm mt-1 ${
+                c.likedBy?.includes(user?.uid || "")
+                  ? "text-blue-600 font-semibold"
+                  : "text-gray-500"
+              }`}
+            >
+              👍 {c.likes || 0}
+            </button>
+
             <CommentItem
               postId={postId}
               comment={c}
@@ -201,7 +229,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
   const user = auth.currentUser;
 
   const handleAddReply = async () => {
-    if (!user) return alert("로그인이 필요합니다.");
+    if (!user) return alert("로그인 필요");
     if (!replyText.trim()) return;
     await addDoc(
       collection(db, "posts", postId, "comments", comment.id, "replies"),
@@ -213,10 +241,33 @@ const CommentItem: React.FC<CommentItemProps> = ({
           displayName: user.displayName || "익명",
           photoURL: user.photoURL || "",
         },
+        likes: 0,
+        likedBy: [],
       }
     );
     setReplyText("");
     setShowReply(false);
+  };
+
+  const handleLikeReply = async (replyId: string, likedBy?: string[]) => {
+    if (!user) return alert("로그인 필요");
+    const ref = doc(
+      db,
+      "posts",
+      postId,
+      "comments",
+      comment.id,
+      "replies",
+      replyId
+    );
+    const alreadyLiked = likedBy?.includes(user.uid);
+
+    await updateDoc(ref, {
+      likes: alreadyLiked
+        ? (comment.replies?.find((r) => r.id === replyId)?.likes || 0) - 1
+        : (comment.replies?.find((r) => r.id === replyId)?.likes || 0) + 1,
+      likedBy: alreadyLiked ? arrayRemove(user.uid) : arrayUnion(user.uid),
+    });
   };
 
   return (
@@ -243,9 +294,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
           </button>
         </div>
       )}
-
-      {/* 답글 리스트 */}
-      {comment.replies?.length > 0 && (
+      {comment.replies && comment.replies.length > 0 && (
         <div className="ml-4 mt-2 space-y-1">
           {comment.replies.map((r) => (
             <div key={r.id} className="flex items-center gap-2 text-sm">
@@ -264,6 +313,17 @@ const CommentItem: React.FC<CommentItemProps> = ({
                 {r.author.displayName}
               </span>
               <span className="text-gray-500">{r.content}</span>
+              {/* 답글 좋아요 버튼 */}
+              <button
+                onClick={() => handleLikeReply(r.id, r.likedBy)}
+                className={`ml-2 text-xs ${
+                  r.likedBy?.includes(user?.uid || "")
+                    ? "text-blue-600 font-semibold"
+                    : "text-gray-400"
+                }`}
+              >
+                👍 {r.likes || 0}
+              </button>
             </div>
           ))}
         </div>
@@ -272,4 +332,4 @@ const CommentItem: React.FC<CommentItemProps> = ({
   );
 };
 
-export default Comments;
+export default Comment;

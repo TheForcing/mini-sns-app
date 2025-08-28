@@ -1,16 +1,16 @@
 // src/pages/register.tsx
 import Register from "../features/auth/components/Register";
 import { useAuth } from "../features/auth/hooks/useAuth";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 
 const RegisterPage = () => {
   const { user, loading } = useAuth();
-  const router = useRouter();
+  const router = useNavigate();
 
   useEffect(() => {
     if (!loading && user) {
-      router.push("/"); // 회원가입 성공 시 메인으로 이동
+      router("/"); // 회원가입 성공 시 메인으로 이동
     }
   }, [user, loading, router]);
 
@@ -22,7 +22,7 @@ const RegisterPage = () => {
         <p className="text-center text-sm text-gray-500 mt-4">
           이미 계정이 있으신가요?{" "}
           <span
-            onClick={() => router.push("/login")}
+            onClick={() => router("/login")}
             className="text-blue-500 cursor-pointer"
           >
             로그인
