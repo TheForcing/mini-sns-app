@@ -10,8 +10,7 @@ import {
   doc,
   getDocs,
   updateDoc,
-  arrayUnion,
-  arrayRemove,
+  increment,
 } from "firebase/firestore";
 import { auth, db } from "../../../firebase";
 import { formatRelativeTime } from "../../../utils/time";
@@ -26,7 +25,6 @@ interface CommentType {
   };
   createdAt: any;
   likes?: number;
-  likedBy?: string[];
   replies?: ReplyType[];
 }
 
@@ -40,7 +38,6 @@ interface ReplyType {
   };
   createdAt: any;
   likes?: number;
-  likedBy?: string[];
 }
 
 interface CommentsProps {
@@ -49,7 +46,7 @@ interface CommentsProps {
   postAuthorUid: string;
 }
 
-const Comment: React.FC<CommentsProps> = ({
+const Comments: React.FC<CommentsProps> = ({
   postId,
   currentUserId,
   postAuthorUid,
@@ -68,7 +65,6 @@ const Comment: React.FC<CommentsProps> = ({
       for (const docSnap of snapshot.docs) {
         const comment = { id: docSnap.id, ...docSnap.data() } as CommentType;
 
-        // 답글 가져오기
         const repliesCol = collection(
           db,
           "posts",
@@ -99,13 +95,12 @@ const Comment: React.FC<CommentsProps> = ({
     await addDoc(collection(db, "posts", postId, "comments"), {
       content: text.trim(),
       createdAt: serverTimestamp(),
+      likes: 0,
       author: {
         uid: user.uid,
         displayName: user.displayName || "익명",
         photoURL: user.photoURL || "",
       },
-      likes: 0,
-      likedBy: [],
     });
 
     setText("");
@@ -121,27 +116,39 @@ const Comment: React.FC<CommentsProps> = ({
     await deleteDoc(doc(db, "posts", postId, "comments", commentId));
   };
 
+  const handleLike = async (commentId: string) => {
+    await updateDoc(doc(db, "posts", postId, "comments", commentId), {
+      likes: increment(1),
+    });
+  };
+
   return (
     <div className="mt-6 bg-white rounded-lg shadow p-5">
-      <form onSubmit={handleAdd} className="flex gap-2 items-center">
-        <input
+      <form onSubmit={handleAdd} className="flex gap-2 items-start">
+        <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
-          className="flex-1 border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-200 transition"
-          placeholder="댓글을 입력하세요"
+          className="flex-1 border border-gray-300 p-2 rounded-lg resize-none h-16 focus:outline-none focus:ring-2 focus:ring-blue-300 transition"
+          placeholder="댓글을 입력하세요 (Ctrl + Enter 전송)"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && e.ctrlKey) {
+              handleAdd(e);
+            }
+          }}
         />
         <button
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
           type="submit"
         >
           전송
         </button>
       </form>
+
       <ul className="mt-5 space-y-4">
         {comments.map((c) => (
           <li
             key={c.id}
-            className="border border-gray-200 rounded-lg p-4 bg-gray-50 hover:shadow transition"
+            className="border border-gray-200 rounded-lg p-4 bg-gray-50 hover:shadow-md transition"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -157,50 +164,40 @@ const Comment: React.FC<CommentsProps> = ({
                   </div>
                 )}
                 <div>
-                  <div className="font-semibold text-gray-800">
+                  <div className="font-semibold text-gray-800 flex items-center gap-1">
                     {c.author.displayName}
+                    {c.author.uid === postAuthorUid && (
+                      <span className="bg-yellow-200 text-yellow-700 text-xs px-2 py-0.5 rounded">
+                        작성자
+                      </span>
+                    )}
                   </div>
                   <div className="text-xs text-gray-400">
                     {formatRelativeTime(c.createdAt)}
                   </div>
                 </div>
               </div>
-              {(user?.uid === c.author.uid || user?.uid === postAuthorUid) && (
+              <div className="flex items-center gap-3">
                 <button
-                  onClick={() => handleDelete(c.id, c.author.uid)}
-                  className="text-xs text-red-500 hover:underline"
+                  onClick={() => handleLike(c.id)}
+                  className="text-pink-500 hover:scale-110 transition"
                 >
-                  삭제
+                  ❤️ {c.likes || 0}
                 </button>
-              )}
+                {(user?.uid === c.author.uid ||
+                  user?.uid === postAuthorUid) && (
+                  <button
+                    onClick={() => handleDelete(c.id, c.author.uid)}
+                    className="text-xs text-red-500 hover:underline"
+                  >
+                    삭제
+                  </button>
+                )}
+              </div>
             </div>
             <p className="mt-3 mb-1 whitespace-pre-wrap text-gray-700">
               {c.content}
             </p>
-
-            {/* 좋아요 버튼 */}
-            <button
-              onClick={async () => {
-                if (!user) return alert("로그인 필요");
-                const ref = doc(db, "posts", postId, "comments", c.id);
-                const alreadyLiked = c.likedBy?.includes(user.uid);
-
-                await updateDoc(ref, {
-                  likes: alreadyLiked ? (c.likes || 0) - 1 : (c.likes || 0) + 1,
-                  likedBy: alreadyLiked
-                    ? arrayRemove(user.uid)
-                    : arrayUnion(user.uid),
-                });
-              }}
-              className={`text-sm mt-1 ${
-                c.likedBy?.includes(user?.uid || "")
-                  ? "text-blue-600 font-semibold"
-                  : "text-gray-500"
-              }`}
-            >
-              👍 {c.likes || 0}
-            </button>
-
             <CommentItem
               postId={postId}
               comment={c}
@@ -236,42 +233,20 @@ const CommentItem: React.FC<CommentItemProps> = ({
       {
         content: replyText.trim(),
         createdAt: serverTimestamp(),
+        likes: 0,
         author: {
           uid: user.uid,
           displayName: user.displayName || "익명",
           photoURL: user.photoURL || "",
         },
-        likes: 0,
-        likedBy: [],
       }
     );
     setReplyText("");
     setShowReply(false);
   };
 
-  const handleLikeReply = async (replyId: string, likedBy?: string[]) => {
-    if (!user) return alert("로그인 필요");
-    const ref = doc(
-      db,
-      "posts",
-      postId,
-      "comments",
-      comment.id,
-      "replies",
-      replyId
-    );
-    const alreadyLiked = likedBy?.includes(user.uid);
-
-    await updateDoc(ref, {
-      likes: alreadyLiked
-        ? (comment.replies?.find((r) => r.id === replyId)?.likes || 0) - 1
-        : (comment.replies?.find((r) => r.id === replyId)?.likes || 0) + 1,
-      likedBy: alreadyLiked ? arrayRemove(user.uid) : arrayUnion(user.uid),
-    });
-  };
-
   return (
-    <div className="mt-2 ml-8">
+    <div className="mt-3 ml-8 border-l-2 border-gray-200 pl-3">
       <button
         onClick={() => setShowReply(!showReply)}
         className="text-blue-500 text-xs hover:underline"
@@ -295,9 +270,12 @@ const CommentItem: React.FC<CommentItemProps> = ({
         </div>
       )}
       {comment.replies && comment.replies.length > 0 && (
-        <div className="ml-4 mt-2 space-y-1">
+        <div className="ml-2 mt-2 space-y-2">
           {comment.replies.map((r) => (
-            <div key={r.id} className="flex items-center gap-2 text-sm">
+            <div
+              key={r.id}
+              className="flex items-center gap-2 text-sm bg-gray-100 p-2 rounded-lg"
+            >
               {r.author.photoURL ? (
                 <img
                   src={r.author.photoURL}
@@ -313,17 +291,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                 {r.author.displayName}
               </span>
               <span className="text-gray-500">{r.content}</span>
-              {/* 답글 좋아요 버튼 */}
-              <button
-                onClick={() => handleLikeReply(r.id, r.likedBy)}
-                className={`ml-2 text-xs ${
-                  r.likedBy?.includes(user?.uid || "")
-                    ? "text-blue-600 font-semibold"
-                    : "text-gray-400"
-                }`}
-              >
-                👍 {r.likes || 0}
-              </button>
+              <button className="text-pink-500 text-xs ml-auto">❤️</button>
             </div>
           ))}
         </div>
@@ -332,4 +300,4 @@ const CommentItem: React.FC<CommentItemProps> = ({
   );
 };
 
-export default Comment;
+export default Comments;

@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../../../firebase";
 import PostItem from "./PostItem";
+import PostCard from "./PostCard";
 
 const PAGE_SIZE = 5;
 
@@ -97,8 +98,8 @@ const PostList = () => {
 
   return (
     <div className="space-y-4 max-w-2xl mx-auto">
-      {posts.map((p) => (
-        <PostItem key={p.id} post={p} />
+      {posts.map((post) => (
+        <PostCard key={post.id} {...post} />
       ))}
       <div ref={loadMoreRef} className="h-8 flex items-center justify-center">
         {loading ? (
