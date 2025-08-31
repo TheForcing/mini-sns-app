@@ -3,6 +3,7 @@ import { auth } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import PostForm from "../features/post/components/PostForm";
 import PostLists from "../features/post/components/PostLists";
+import CreatePost from "../features/post/components/CreatePost";
 
 const Home = () => {
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -48,12 +49,7 @@ const Home = () => {
           )}
         </header>
         <section className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <span role="img" aria-label="pin">
-              📌
-            </span>{" "}
-            새 게시글 작성
-          </h2>
+          <CreatePost />
           <PostForm />
         </section>
         <section className="bg-white rounded-lg shadow p-6">

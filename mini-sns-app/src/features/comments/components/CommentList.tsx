@@ -1,65 +1,67 @@
-import CommentCard from "../components/CommnetCard";
+import { useEffect, useState } from "react";
+import { db } from "../firebase";
+import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 
-const CommentList = () => {
-  const comments = [
-    {
-      id: "c1",
-      authorName: "홍길동",
-      authorPhoto: "https://i.pravatar.cc/40?img=1",
-      content: "첫 댓글입니다! 🎉",
-      createdAt: "2분 전",
-      likes: 3,
-      isAuthor: true,
-      replies: [
-        {
-          id: "r1",
-          authorName: "김철수",
-          authorPhoto: "https://i.pravatar.cc/40?img=2",
-          content: "축하합니다 👏",
-          createdAt: "1분 전",
-        },
-      ],
-    },
-    {
-      id: "c2",
-      authorName: "이영희",
-      authorPhoto: "https://i.pravatar.cc/40?img=3",
-      content: "좋은 글 잘 보고 갑니다 👍",
-      createdAt: "5분 전",
-      likes: 1,
-      replies: [],
-    },
-  ];
+interface Comment {
+  id: string;
+  text: string;
+  authorName: string;
+  authorPhoto: string;
+  createdAt: any;
+}
 
-  // 좋아요 처리
-  const handleLike = (id: string) => {
-    console.log("좋아요 클릭:", id);
-    // Firestore likes 업데이트 로직 추가 가능
-  };
+interface CommentListProps {
+  postId: string;
+}
 
-  // 답글 처리
-  const handleReply = (id: string, text: string) => {
-    console.log("답글 작성:", id, text);
-    // Firestore replies 컬렉션에 추가하는 로직 작성 가능
-  };
+const CommentList = ({ postId }: CommentListProps) => {
+  const [comments, setComments] = useState<Comment[]>([]);
 
-  // 삭제 처리
-  const handleDelete = (id: string) => {
-    console.log("댓글 삭제:", id);
-    // Firestore에서 문서 삭제 로직 추가 가능
-  };
+  useEffect(() => {
+    const q = query(
+      collection(db, "posts", postId, "comments"),
+      orderBy("createdAt", "asc")
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const fetchedComments = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          text: data.text,
+          authorName: data.authorName,
+          authorPhoto: data.authorPhoto,
+          createdAt: data.createdAt?.toDate?.() || new Date(),
+        } as Comment;
+      });
+      setComments(fetchedComments);
+    });
+
+    return () => unsubscribe();
+  }, [postId]);
 
   return (
-    <div className="space-y-4">
-      {comments.map((comment) => (
-        <CommentCard
-          key={comment.id}
-          {...comment}
-          onLike={handleLike}
-          onReply={handleReply}
-          onDelete={handleDelete}
-        />
-      ))}
+    <div className="mt-4 space-y-3">
+      {comments.length === 0 ? (
+        <p className="text-gray-500 text-sm">아직 댓글이 없습니다.</p>
+      ) : (
+        comments.map((c) => (
+          <div key={c.id} className="flex gap-3 items-start">
+            <img
+              src={c.authorPhoto}
+              alt="profile"
+              className="w-8 h-8 rounded-full object-cover"
+            />
+            <div className="bg-gray-100 px-3 py-2 rounded-lg max-w-sm">
+              <p className="text-sm font-semibold">{c.authorName}</p>
+              <p className="text-sm text-gray-700">{c.text}</p>
+              <p className="text-xs text-gray-400 mt-1">
+                {c.createdAt.toLocaleString()}
+              </p>
+            </div>
+          </div>
+        ))
+      )}
     </div>
   );
 };
