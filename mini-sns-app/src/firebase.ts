@@ -2,6 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 import { getFirestore } from "firebase/firestore";
+import { GoogleAuthProvider } from "firebase/auth/web-extension";
 const firebaseConfig = {
   apiKey: "AIzaSyA_qfhnjhOpy9sQ16XU5vRw0ocL17e9FEc",
   authDomain: "minisnsapp.firebaseapp.com",
@@ -16,3 +17,4 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const storage = getStorage(app);
+export const provider = new GoogleAuthProvider();
