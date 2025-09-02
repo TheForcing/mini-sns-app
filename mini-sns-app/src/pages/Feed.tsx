@@ -122,6 +122,7 @@ const Feed = () => {
           createdAt={formatDistanceToNow(post.createdAt)}
           likes={post.likes}
           comments={post.commentsCount}
+          authorPhoto={""}
         />
       ))}
 
