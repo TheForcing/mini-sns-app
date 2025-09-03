@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Heart, MessageCircle, Share2 } from "lucide-react";
-import CommentList from "./CommentList";
+import CommentList from "../../comments/components/CommentList";
 
 interface PostProps {
   id: string;

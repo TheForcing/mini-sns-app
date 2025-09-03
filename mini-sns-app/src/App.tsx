@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "../src/pages/Register";
 import Profile from "../src/pages/profile/[id]";
+// import UserProfile from "./pages/UserProfile";
 import UserProfile from "./pages/UserProfile";
 import { auth } from "./firebase";
 import { signOut } from "firebase/auth";
