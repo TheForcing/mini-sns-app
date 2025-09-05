@@ -46,18 +46,17 @@ const LikeButton: React.FC<LikeButtonProps> = ({ postId }) => {
     }
   };
 
-  // ⬇ 반드시 JSX 반환
   return (
     <button
       onClick={toggleLike}
-      className="flex items-center gap-2 group focus:outline-none"
+      className="flex items-center gap-1 focus:outline-none group"
     >
       {isLiked ? (
-        <FaHeart className="text-red-500 w-5 h-5 transition-transform duration-200 group-hover:scale-110" />
+        <FaHeart className="w-6 h-6 text-red-500 transition-transform duration-200 group-hover:scale-110" />
       ) : (
-        <FaRegHeart className="text-gray-500 w-5 h-5 transition-colors duration-200 group-hover:text-red-500 group-hover:scale-110" />
+        <FaRegHeart className="w-6 h-6 text-gray-500 transition-colors duration-200 group-hover:text-red-500 group-hover:scale-110" />
       )}
-      <span className="text-sm text-gray-600 group-hover:text-red-500 transition">
+      <span className="text-sm text-gray-600 group-hover:text-red-500 transition-colors">
         {likes.length}
       </span>
     </button>

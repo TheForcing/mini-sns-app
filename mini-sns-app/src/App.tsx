@@ -16,6 +16,7 @@ import PostPage from "./pages/PostPages";
 import Feed from "./pages/Feed";
 import { useEffect } from "react";
 import { seedData } from "./utils/seedData";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   const handleLogout = async () => {
@@ -30,6 +31,7 @@ function App() {
     <BrowserRouter>
       <header className="p-4 border-b mb-4">
         <nav className="max-w-3xl mx-auto flex gap-4">
+          <Toaster position="top-center" />
           <Link to="/">Home</Link>
           <Link to="/profile">Profile</Link>
           <Link to="/login">Login</Link>
@@ -47,7 +49,7 @@ function App() {
       <main>
         <Routes>
           {/* Layout으로 감싸는 라우트 구조 개선 */}
-          <Route element={<Layout>{/* children이 들어갈 위치 */}</Layout>}>
+          <Route element={<Layout children={undefined}></Layout>}>
             <Route path="/" element={<Home />} />
             <Route path="/profile" element={<Profile />} />
             <Route
