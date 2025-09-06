@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100;
+    font-family: "Inter", sans-serif;
+  }
+}
+
+@layer components {
+  /* 카드 공통 */
+  .card {
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow p-4;
+  }
+
+  /* 버튼 */
+  .btn {
+    @apply px-4 py-2 rounded-md font-medium transition;
+  }
+  .btn-primary {
+    @apply bg-blue-500 text-white hover:bg-blue-600;
+  }
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200;
+  }
+  .btn-danger {
+    @apply bg-red-500 text-white hover:bg-red-600;
+  }
+
+  /* 입력 필드 */
+  .input {
+    @apply w-full px-3 py-2 border rounded-md outline-none
+    border-gray-300 dark:border-gray-600
+    focus:ring-2 focus:ring-blue-500;
+  }
+
+  /* 제목/본문/메타 텍스트 */
+  .heading {
+    @apply text-xl font-bold text-gray-900 dark:text-gray-100;
+  }
+  .meta {
+    @apply text-sm text-gray-500 dark:text-gray-400;
+  }
+}

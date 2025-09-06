@@ -249,7 +249,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
     <div className="mt-3 ml-8 border-l-2 border-gray-200 pl-3">
       <button
         onClick={() => setShowReply(!showReply)}
-        className="text-blue-500 text-xs hover:underline"
+        className="btn btn-primary"
       >
         답글 달기
       </button>
@@ -259,12 +259,9 @@ const CommentItem: React.FC<CommentItemProps> = ({
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
             placeholder="답글 입력"
-            className="border border-gray-300 p-1 flex-1 rounded focus:outline-none focus:ring-2 focus:ring-green-200 transition"
+            className="input"
           />
-          <button
-            onClick={handleAddReply}
-            className="bg-green-500 hover:bg-green-600 text-white px-2 rounded transition"
-          >
+          <button onClick={handleAddReply} className="btn btn-primary">
             등록
           </button>
         </div>
