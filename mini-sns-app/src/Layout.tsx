@@ -8,6 +8,7 @@ interface LayoutProps {
 }
 
 const Layout = ({ children }: LayoutProps) => {
+  const user = auth.currentUser;
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -59,6 +60,81 @@ const Layout = ({ children }: LayoutProps) => {
             >
               로그아웃
             </button>
+            {/* Middle: 검색창 */}
+            <div className="hidden sm:flex flex-1 max-w-md mx-6">
+              <input type="text" placeholder="검색..." className="input" />
+            </div>
+            <nav className="flex gap-4 items-center">
+              <Link
+                to="/"
+                className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition"
+              >
+                피드
+              </Link>
+
+              {user ? (
+                <>
+                  {/* 작성 버튼 */}
+                  <Link
+                    to="/post/new"
+                    className="btn btn-primary px-3 py-1 text-sm"
+                  >
+                    ➕ 작성
+                  </Link>
+
+                  {/* 알림 버튼 */}
+                  <button className="relative p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                    <span className="material-icons text-gray-600 dark:text-gray-200">
+                      notifications
+                    </span>
+                    <span className="absolute top-1 right-1 bg-red-500 text-white text-xs px-1 rounded-full">
+                      3
+                    </span>
+                  </button>
+
+                  {/* 프로필 */}
+                  <Link
+                    to="/profile"
+                    className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden"
+                  >
+                    {user.photoURL ? (
+                      <img
+                        src={user.photoURL}
+                        alt="profile"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-gray-600 font-bold text-sm">
+                        {user.displayName?.[0] || "?"}
+                      </span>
+                    )}
+                  </Link>
+
+                  {/* 로그아웃 */}
+                  <button
+                    onClick={handleLogout}
+                    className="btn btn-secondary px-3 py-1 text-sm"
+                  >
+                    로그아웃
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className="btn btn-primary px-3 py-1 text-sm"
+                  >
+                    로그인
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="btn btn-secondary px-3 py-1 text-sm"
+                  >
+                    회원가입
+                  </Link>
+                </>
+              )}
+            </nav>
           </div>
 
           {/* 모바일 메뉴 버튼 */}
@@ -115,6 +191,10 @@ const Layout = ({ children }: LayoutProps) => {
       <main className="max-w-3xl mx-auto px-4 py-6">
         <div className="bg-white shadow rounded-xl p-6">{children}</div>
       </main>
+      {/* Footer */}
+      <footer className="bg-gray-200 dark:bg-gray-800 py-3 mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
+        © {new Date().getFullYear()} MySNS. All rights reserved.
+      </footer>
     </div>
   );
 };

@@ -51,7 +51,7 @@ const Login = () => {
             placeholder="이메일"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="input"
             required
           />
           <input
@@ -59,14 +59,14 @@ const Login = () => {
             placeholder="비밀번호"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="input"
             required
           />
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition disabled:opacity-50"
+            className="btn btn-primary w-full"
           >
             {loading ? "로그인 중..." : "로그인"}
           </button>
