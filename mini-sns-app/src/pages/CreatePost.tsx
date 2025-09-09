@@ -1,28 +1,57 @@
-import PostForm from "../features/post/components/PostForm";
-import { useAuth } from "../features/auth/hooks/useAuth";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+// src/pages/CreatePost.tsx
+import { useState } from "react";
+import { db, auth } from "../firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
 
-const CreatePostPage = () => {
-  const { user, loading } = useAuth();
-  const router = useRouter();
+const CreatePost = () => {
+  const [content, setContent] = useState("");
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push("/login"); // 로그인 안 하면 접근 불가
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!auth.currentUser) {
+      alert("로그인이 필요합니다.");
+      return;
     }
-  }, [user, loading, router]);
 
-  if (loading) return <p>로딩중...</p>;
+    try {
+      await addDoc(collection(db, "posts"), {
+        content,
+        authorId: auth.currentUser.uid,
+        authorName: auth.currentUser.displayName || "익명",
+        createdAt: serverTimestamp(),
+        likes: 0,
+        commentsCount: 0,
+      });
+      setContent("");
+      navigate("/feed"); // 작성 후 피드로 이동
+    } catch (err) {
+      console.error(err);
+      alert("게시글 작성 중 오류가 발생했습니다.");
+    }
+  };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-lg">
-        <h1 className="text-xl font-bold text-center mb-4">게시글 작성</h1>
-        <PostForm />
-      </div>
+    <div className="max-w-2xl mx-auto bg-white shadow rounded p-4">
+      <h2 className="text-lg font-bold mb-4">새 글 작성</h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <textarea
+          className="w-full border rounded p-2"
+          rows={5}
+          placeholder="무슨 생각을 하고 있나요?"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+        />
+        <button
+          type="submit"
+          className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+        >
+          게시하기
+        </button>
+      </form>
     </div>
   );
 };
 
-export default CreatePostPage;
+export default CreatePost;

@@ -1,10 +1,11 @@
+// src/Layout.tsx
 import { ReactNode, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { auth } from "../firebase";
+import { Link, useNavigate, Outlet } from "react-router-dom";
+import { auth } from "./firebase";
 import { signOut } from "firebase/auth";
 
 interface LayoutProps {
-  children: ReactNode;
+  children?: ReactNode; // Outlet fallback 지원
 }
 
 const Layout = ({ children }: LayoutProps) => {
@@ -34,8 +35,8 @@ const Layout = ({ children }: LayoutProps) => {
             MySNS
           </Link>
 
-          {/* 메뉴 (데스크탑) */}
-          <div className="hidden md:flex space-x-8 items-center">
+          {/* 데스크탑 메뉴 */}
+          <div className="hidden md:flex items-center gap-10">
             <Link
               to="/"
               className="text-gray-700 font-medium hover:text-blue-600 transition-colors"
@@ -43,105 +44,102 @@ const Layout = ({ children }: LayoutProps) => {
               홈
             </Link>
             <Link
-              to="/write"
+              to="/feed"
+              className="text-gray-700 font-medium hover:text-blue-600 transition-colors"
+            >
+              피드
+            </Link>
+            <Link
+              to="/create"
               className="text-gray-700 font-medium hover:text-blue-600 transition-colors"
             >
               글쓰기
             </Link>
             <Link
-              to="/profile/me"
+              to="/profile"
               className="text-gray-700 font-medium hover:text-blue-600 transition-colors"
             >
               프로필
             </Link>
-            <button
-              onClick={handleLogout}
-              className="px-4 py-1.5 rounded-lg bg-gradient-to-r from-red-500 to-pink-500 text-white font-medium hover:opacity-90 transition"
-            >
-              로그아웃
-            </button>
-            {/* Middle: 검색창 */}
-            <div className="hidden sm:flex flex-1 max-w-md mx-6">
-              <input type="text" placeholder="검색..." className="input" />
+
+            {/* 검색창 */}
+            <div className="flex-1 max-w-sm mx-2">
+              <input
+                type="text"
+                placeholder="검색..."
+                className="w-full border rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none"
+              />
             </div>
-            <nav className="flex gap-4 items-center">
-              <Link
-                to="/"
-                className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition"
-              >
-                피드
-              </Link>
 
-              {user ? (
-                <>
-                  {/* 작성 버튼 */}
-                  <Link
-                    to="/post/new"
-                    className="btn btn-primary px-3 py-1 text-sm"
-                  >
-                    ➕ 작성
-                  </Link>
-
-                  {/* 알림 버튼 */}
-                  <button className="relative p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-                    <span className="material-icons text-gray-600 dark:text-gray-200">
-                      notifications
+            {user ? (
+              <>
+                {/* 작성 버튼 */}
+                <Link
+                  to="/create"
+                  className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition"
+                >
+                  ➕ 작성
+                </Link>
+                {/* 알림 */}
+                <Link
+                  to="/notifications"
+                  className="relative p-2 rounded-full hover:bg-gray-100 transition"
+                >
+                  <span className="material-icons text-gray-600">
+                    notifications
+                  </span>
+                  <span className="absolute top-1 right-1 bg-red-500 text-white text-xs px-1 rounded-full">
+                    3
+                  </span>
+                </Link>
+                {/* 프로필 아바타 */}
+                <Link
+                  to="/profile"
+                  className="w-9 h-9 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden"
+                >
+                  {user.photoURL ? (
+                    <img
+                      src={user.photoURL}
+                      alt="profile"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-gray-600 font-bold text-sm">
+                      {user.displayName?.[0] || "?"}
                     </span>
-                    <span className="absolute top-1 right-1 bg-red-500 text-white text-xs px-1 rounded-full">
-                      3
-                    </span>
-                  </button>
-
-                  {/* 프로필 */}
-                  <Link
-                    to="/profile"
-                    className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden"
-                  >
-                    {user.photoURL ? (
-                      <img
-                        src={user.photoURL}
-                        alt="profile"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-gray-600 font-bold text-sm">
-                        {user.displayName?.[0] || "?"}
-                      </span>
-                    )}
-                  </Link>
-
-                  {/* 로그아웃 */}
-                  <button
-                    onClick={handleLogout}
-                    className="btn btn-secondary px-3 py-1 text-sm"
-                  >
-                    로그아웃
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link
-                    to="/login"
-                    className="btn btn-primary px-3 py-1 text-sm"
-                  >
-                    로그인
-                  </Link>
-                  <Link
-                    to="/register"
-                    className="btn btn-secondary px-3 py-1 text-sm"
-                  >
-                    회원가입
-                  </Link>
-                </>
-              )}
-            </nav>
+                  )}
+                </Link>
+                {/* 로그아웃 */}
+                <button
+                  onClick={handleLogout}
+                  className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-red-500 to-pink-500 text-white text-sm font-medium hover:opacity-90 transition"
+                >
+                  로그아웃
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition"
+                >
+                  로그인
+                </Link>
+                <Link
+                  to="/register"
+                  className="px-3 py-1.5 rounded-lg bg-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-300 transition"
+                >
+                  회원가입
+                </Link>
+              </>
+            )}
           </div>
 
           {/* 모바일 메뉴 버튼 */}
           <div className="md:hidden">
             <button
               className="text-gray-700 hover:text-blue-600 focus:outline-none text-2xl"
-              onClick={() => setMenuOpen(!menuOpen)}
+              onClick={() => setMenuOpen((v) => !v)}
             >
               ☰
             </button>
@@ -161,38 +159,82 @@ const Layout = ({ children }: LayoutProps) => {
               홈
             </Link>
             <Link
-              to="/write"
+              to="/feed"
+              className="text-gray-700 hover:text-blue-600 font-medium"
+              onClick={() => setMenuOpen(false)}
+            >
+              피드
+            </Link>
+            <Link
+              to="/create"
               className="text-gray-700 hover:text-blue-600 font-medium"
               onClick={() => setMenuOpen(false)}
             >
               글쓰기
             </Link>
             <Link
-              to="/profile/me"
+              to="/profile"
               className="text-gray-700 hover:text-blue-600 font-medium"
               onClick={() => setMenuOpen(false)}
             >
               프로필
             </Link>
-            <button
-              onClick={() => {
-                handleLogout();
-                setMenuOpen(false);
-              }}
-              className="px-4 py-2 rounded-lg bg-gradient-to-r from-red-500 to-pink-500 text-white font-medium hover:opacity-90 transition"
+            <Link
+              to="/notifications"
+              className="text-gray-700 hover:text-blue-600 font-medium"
+              onClick={() => setMenuOpen(false)}
             >
-              로그아웃
-            </button>
+              알림
+            </Link>
+            <Link
+              to="/search"
+              className="text-gray-700 hover:text-blue-600 font-medium"
+              onClick={() => setMenuOpen(false)}
+            >
+              검색
+            </Link>
+
+            {user ? (
+              <button
+                onClick={() => {
+                  handleLogout();
+                  setMenuOpen(false);
+                }}
+                className="px-4 py-2 rounded-lg bg-gradient-to-r from-red-500 to-pink-500 text-white font-medium hover:opacity-90 transition"
+              >
+                로그아웃
+              </button>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium text-center"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  로그인
+                </Link>
+                <Link
+                  to="/register"
+                  className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 font-medium text-center"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  회원가입
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}
 
-      {/* 메인 컨텐츠 */}
+      {/* 메인 컨텐츠: children 있으면 children, 없으면 Outlet */}
       <main className="max-w-3xl mx-auto px-4 py-6">
-        <div className="bg-white shadow rounded-xl p-6">{children}</div>
+        <div className="bg-white shadow rounded-xl p-6">
+          {children ?? <Outlet />}
+        </div>
       </main>
+
       {/* Footer */}
-      <footer className="bg-gray-200 dark:bg-gray-800 py-3 mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
+      <footer className="bg-gray-200 py-3 mt-8 text-center text-sm text-gray-600">
         © {new Date().getFullYear()} MySNS. All rights reserved.
       </footer>
     </div>
