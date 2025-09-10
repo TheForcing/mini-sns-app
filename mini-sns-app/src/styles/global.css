@@ -43,4 +43,25 @@
   .meta {
     @apply text-sm text-gray-500 dark:text-gray-400;
   }
+  .centered-content {
+    @apply flex flex-col items-center justify-center text-center;
+  }
+
+  /* 카드형 중앙 콘텐츠: 내부 여백, 그림자, 너비 제어 */
+  .centered-card {
+    @apply centered-content bg-white dark:bg-gray-800 rounded-xl shadow p-6 w-full max-w-2xl mx-auto;
+  }
+
+  /* 폼 항목 중앙 정렬 전용(입력 넓이 통제) */
+  .centered-form {
+    @apply flex flex-col items-center w-full max-w-md mx-auto;
+  }
+
+  .centered-input {
+    @apply input w-full;
+  }
+
+  .centered-btn {
+    @apply btn btn-primary mt-3 w-full;
+  }
 }

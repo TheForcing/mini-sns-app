@@ -27,7 +27,7 @@ function App() {
 
       <Routes>
         {/* Layout 안에서 공통 UI 적용 */}
-        <Route element={<Layout children={undefined} />}>
+        <Route element={<Layout centerVertically={false} />}>
           <Route path="/" element={<Home />} />
           <Route path="/feed" element={<Feed />} />
           <Route path="/create" element={<CreatePost />} />{" "}

@@ -33,24 +33,26 @@ const CreatePost = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto bg-white shadow rounded p-4">
-      <h2 className="text-lg font-bold mb-4">새 글 작성</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <textarea
-          className="w-full border rounded p-2"
-          rows={5}
-          placeholder="무슨 생각을 하고 있나요?"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-        />
-        <button
-          type="submit"
-          className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
-        >
-          게시하기
-        </button>
-      </form>
-    </div>
+    <section className="centered-card">
+      <div className="max-w-2xl mx-auto bg-white shadow rounded p-4">
+        <h2 className="text-lg font-bold mb-4">새 글 작성</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <textarea
+            className="w-full border rounded p-2"
+            rows={5}
+            placeholder="무슨 생각을 하고 있나요?"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+          />
+          <button
+            type="submit"
+            className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+          >
+            게시하기
+          </button>
+        </form>
+      </div>
+    </section>
   );
 };
 

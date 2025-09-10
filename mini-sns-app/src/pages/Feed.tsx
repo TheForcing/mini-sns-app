@@ -108,7 +108,7 @@ const Feed = () => {
   }, [fetchPosts, loading, hasMore]);
 
   return (
-    <div className="max-w-2xl mx-auto px-4">
+    <div className="centered-content max-w-2xl mx-auto px-4">
       {posts.length === 0 && !loading && (
         <p className="text-gray-500 text-center mt-10">게시글이 없습니다.</p>
       )}

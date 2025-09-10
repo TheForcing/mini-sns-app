@@ -126,7 +126,7 @@ const PostPage = () => {
     return <p className="text-center mt-10">게시글을 불러오는 중...</p>;
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white shadow rounded-lg mt-6">
+    <div className="centered-content max-w-2xl mx-auto p-6 bg-white shadow rounded-lg mt-6">
       {/* 작성자 영역 */}
       <div className="flex items-center mb-4">
         <img

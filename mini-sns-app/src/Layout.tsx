@@ -1,14 +1,20 @@
-// src/Layout.tsx
 import { ReactNode, useState } from "react";
 import { Link, useNavigate, Outlet } from "react-router-dom";
 import { auth } from "./firebase";
 import { signOut } from "firebase/auth";
 
+/**
+ * Layout props
+ * - children: Outlet 대신 직접 children 쓸 때 사용
+ * - centerVertically: true(기본) => main 컨텐츠를 화면 중앙(수평+수직)으로 정렬
+ *                      false => main을 상단 정렬 (Feed 처럼 스크롤 많은 페이지에 적합)
+ */
 interface LayoutProps {
-  children?: ReactNode; // Outlet fallback 지원
+  children?: ReactNode;
+  centerVertically?: boolean;
 }
 
-const Layout = ({ children }: LayoutProps) => {
+const Layout = ({ children, centerVertically = true }: LayoutProps) => {
   const user = auth.currentUser;
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -23,11 +29,11 @@ const Layout = ({ children }: LayoutProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* 상단 네비게이션 */}
-      <nav className="bg-white shadow-md sticky top-0 z-50 border-b border-gray-200">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Header / Navbar */}
+      <header className="bg-white shadow-md sticky top-0 z-50 border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
-          {/* 로고 */}
+          {/* logo */}
           <Link
             to="/"
             className="text-2xl font-extrabold bg-gradient-to-r from-blue-500 to-purple-600 text-transparent bg-clip-text"
@@ -35,7 +41,7 @@ const Layout = ({ children }: LayoutProps) => {
             MySNS
           </Link>
 
-          {/* 데스크탑 메뉴 */}
+          {/* desktop menu */}
           <div className="hidden md:flex items-center gap-10">
             <Link
               to="/"
@@ -62,8 +68,8 @@ const Layout = ({ children }: LayoutProps) => {
               프로필
             </Link>
 
-            {/* 검색창 */}
-            <div className="flex-1 max-w-sm mx-2">
+            {/* 검색창: 넉넉한 여백 확보 */}
+            <div className="flex-1 max-w-sm mx-4">
               <input
                 type="text"
                 placeholder="검색..."
@@ -71,16 +77,16 @@ const Layout = ({ children }: LayoutProps) => {
               />
             </div>
 
+            {/* 오른쪽 액션들 */}
             {user ? (
               <>
-                {/* 작성 버튼 */}
                 <Link
                   to="/create"
                   className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition"
                 >
                   ➕ 작성
                 </Link>
-                {/* 알림 */}
+
                 <Link
                   to="/notifications"
                   className="relative p-2 rounded-full hover:bg-gray-100 transition"
@@ -92,7 +98,7 @@ const Layout = ({ children }: LayoutProps) => {
                     3
                   </span>
                 </Link>
-                {/* 프로필 아바타 */}
+
                 <Link
                   to="/profile"
                   className="w-9 h-9 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden"
@@ -109,7 +115,7 @@ const Layout = ({ children }: LayoutProps) => {
                     </span>
                   )}
                 </Link>
-                {/* 로그아웃 */}
+
                 <button
                   onClick={handleLogout}
                   className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-red-500 to-pink-500 text-white text-sm font-medium hover:opacity-90 transition"
@@ -135,7 +141,7 @@ const Layout = ({ children }: LayoutProps) => {
             )}
           </div>
 
-          {/* 모바일 메뉴 버튼 */}
+          {/* mobile menu button */}
           <div className="md:hidden">
             <button
               className="text-gray-700 hover:text-blue-600 focus:outline-none text-2xl"
@@ -145,9 +151,9 @@ const Layout = ({ children }: LayoutProps) => {
             </button>
           </div>
         </div>
-      </nav>
+      </header>
 
-      {/* 모바일 드로어 메뉴 */}
+      {/* Mobile drawer */}
       {menuOpen && (
         <div className="md:hidden bg-white shadow-lg border-t border-gray-200">
           <div className="flex flex-col space-y-4 px-6 py-4">
@@ -226,10 +232,20 @@ const Layout = ({ children }: LayoutProps) => {
         </div>
       )}
 
-      {/* 메인 컨텐츠: children 있으면 children, 없으면 Outlet */}
-      <main className="max-w-3xl mx-auto px-4 py-6">
-        <div className="bg-white shadow rounded-xl p-6">
-          {children ?? <Outlet />}
+      {/* Main: 중앙 정렬 또는 상단 정렬 선택 가능 */}
+      <main
+        className={
+          "flex-1 flex px-4 py-6 " +
+          (centerVertically
+            ? "items-center justify-center"
+            : "items-start justify-center")
+        }
+      >
+        <div className="w-full max-w-3xl">
+          <div className="bg-white shadow rounded-xl p-6 w-full">
+            {/* children 이 전달되면 children 사용, 아니면 Outlet (라우팅 사용 시) */}
+            {children ?? <Outlet />}
+          </div>
         </div>
       </main>
 

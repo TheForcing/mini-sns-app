@@ -27,7 +27,7 @@ const Profile = () => {
     );
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6">
+    <div className="centered-content max-w-2xl mx-auto px-4 py-6">
       <div className="bg-white p-6 rounded-lg shadow flex items-center space-x-4">
         <img
           src={user.photoURL || "/default-avatar.png"}
