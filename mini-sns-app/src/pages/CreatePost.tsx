@@ -1,4 +1,3 @@
-// src/pages/CreatePost.tsx
 import { useState } from "react";
 import { db, auth } from "../firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
@@ -20,6 +19,7 @@ const CreatePost = () => {
         content,
         authorId: auth.currentUser.uid,
         authorName: auth.currentUser.displayName || "익명",
+        authorPhoto: auth.currentUser.photoURL || null,
         createdAt: serverTimestamp(),
         likes: 0,
         commentsCount: 0,
@@ -33,20 +33,42 @@ const CreatePost = () => {
   };
 
   return (
-    <section className="centered-card">
-      <div className="max-w-2xl mx-auto bg-white shadow rounded p-4">
-        <h2 className="text-lg font-bold mb-4">새 글 작성</h2>
+    <section className="w-full max-w-2xl mx-auto">
+      <div className="bg-white shadow rounded-xl p-5">
+        <h2 className="text-lg font-semibold text-gray-700 mb-4">
+          ✍️ 새 글 작성
+        </h2>
+
         <form onSubmit={handleSubmit} className="space-y-4">
-          <textarea
-            className="w-full border rounded p-2"
-            rows={5}
-            placeholder="무슨 생각을 하고 있나요?"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-          />
+          <div className="flex items-start gap-3">
+            {/* 프로필 아바타 */}
+            {auth.currentUser?.photoURL ? (
+              <img
+                src={auth.currentUser.photoURL}
+                alt="프로필"
+                className="w-10 h-10 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center font-bold text-white">
+                {auth.currentUser?.displayName?.[0] || "?"}
+              </div>
+            )}
+
+            {/* 글쓰기 입력창 */}
+            <textarea
+              className="flex-1 resize-none border border-gray-300 rounded-lg p-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+              rows={4}
+              placeholder="무슨 생각을 하고 있나요?"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+            />
+          </div>
+
+          {/* 게시 버튼 */}
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+            disabled={!content.trim()}
+            className="w-full py-2.5 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-medium shadow hover:opacity-90 transition disabled:opacity-50"
           >
             게시하기
           </button>

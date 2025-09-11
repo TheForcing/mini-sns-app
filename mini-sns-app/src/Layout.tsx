@@ -235,13 +235,13 @@ const Layout = ({ children, centerVertically = true }: LayoutProps) => {
       {/* Main: 중앙 정렬 또는 상단 정렬 선택 가능 */}
       <main
         className={
-          "flex-1 flex px-4 py-6 " +
+          "flex-1 flex justify-center items-start px-4 py-6 " +
           (centerVertically
             ? "items-center justify-center"
             : "items-start justify-center")
         }
       >
-        <div className="w-full max-w-3xl">
+        <div className="w-full max-w-3xl mx-auto">
           <div className="bg-white shadow rounded-xl p-6 w-full">
             {/* children 이 전달되면 children 사용, 아니면 Outlet (라우팅 사용 시) */}
             {children ?? <Outlet />}
