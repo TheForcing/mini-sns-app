@@ -1,117 +1,145 @@
-// src/components/PostList.tsx
 import React, { useEffect, useRef, useState } from "react";
 import {
   collection,
-  getDocs,
   query,
   orderBy,
   limit,
   startAfter,
+  getDocs,
+  DocumentSnapshot,
+  QueryDocumentSnapshot,
+  DocumentData,
   onSnapshot,
 } from "firebase/firestore";
 import { db } from "../../../firebase";
-import PostItem from "./PostItem";
-import PostCard from "./PostCard";
+import PostCard, { Post } from "./PostCard";
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 6;
 
-const PostList = () => {
-  const [posts, setPosts] = useState<any[]>([]);
-  const [lastDoc, setLastDoc] = useState<any | null>(null);
+const toPost = (docSnap: QueryDocumentSnapshot<DocumentData>): Post => {
+  const data = docSnap.data();
+  return {
+    id: docSnap.id,
+    content: data.content,
+    authorId: data.authorId,
+    authorName: data.authorName,
+    authorPhoto: data.authorPhoto ?? null,
+    createdAt: data.createdAt,
+    likes: data.likes ?? [],
+    commentsCount: data.commentsCount ?? 0,
+  };
+};
+
+const PostLists: React.FC = () => {
+  const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [lastDoc, setLastDoc] = useState<DocumentSnapshot | null>(null);
   const [hasMore, setHasMore] = useState(true);
-  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const loadInitial = async () => {
-      setLoading(true);
-      const q = query(
-        collection(db, "posts"),
-        orderBy("createdAt", "desc"),
-        limit(PAGE_SIZE)
-      );
-      const snap = await getDocs(q);
-      const docs = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
-      setPosts(docs);
-      setLastDoc(snap.docs[snap.docs.length - 1] ?? null);
-      setHasMore(snap.docs.length === PAGE_SIZE);
-      setLoading(false);
-    };
-    loadInitial();
-  }, []);
-
-  useEffect(() => {
-    const qLatest = query(
-      collection(db, "posts"),
-      orderBy("createdAt", "desc"),
-      limit(1)
-    );
-    const unsub = onSnapshot(qLatest, (snap) => {
-      if (snap.empty) return;
-      const top = { id: snap.docs[0].id, ...(snap.docs[0].data() as any) };
-      setPosts((prev) => {
-        if (prev.some((p) => p.id === top.id)) return prev;
-        return [top, ...prev];
-      });
-    });
-    return () => unsub();
-  }, []);
-
-  const loadMore = async () => {
-    if (!hasMore || !lastDoc) return;
+    // initial load with realtime for top PAGE_SIZE
     setLoading(true);
     const q = query(
       collection(db, "posts"),
       orderBy("createdAt", "desc"),
-      startAfter(lastDoc),
       limit(PAGE_SIZE)
     );
-    const snap = await getDocs(q);
-    const docs = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
-    setPosts((prev) => [
-      ...prev,
-      ...docs.filter((d) => !prev.some((p) => p.id === d.id)),
-    ]);
-    setLastDoc(snap.docs[snap.docs.length - 1] ?? null);
-    setHasMore(snap.docs.length === PAGE_SIZE);
-    setLoading(false);
+    const unsub = onSnapshot(
+      q,
+      (snap) => {
+        const fresh = snap.docs.map((d) => toPost(d));
+        setPosts(fresh);
+        setLastDoc(snap.docs[snap.docs.length - 1] ?? null);
+        setHasMore(snap.docs.length === PAGE_SIZE);
+        setLoading(false);
+      },
+      (err) => {
+        console.error("post snapshot error", err);
+        setLoading(false);
+      }
+    );
+
+    return () => unsub();
+  }, []);
+
+  const loadMore = async () => {
+    if (!hasMore || loadingMore || !lastDoc) return;
+    setLoadingMore(true);
+    try {
+      const q = query(
+        collection(db, "posts"),
+        orderBy("createdAt", "desc"),
+        startAfter(lastDoc),
+        limit(PAGE_SIZE)
+      );
+      const snap = await getDocs(q);
+      const more = snap.docs.map((d) => toPost(d));
+      setPosts((prev) => [...prev, ...more]);
+      setLastDoc(snap.docs[snap.docs.length - 1] ?? null);
+      setHasMore(snap.docs.length === PAGE_SIZE);
+    } catch (err) {
+      console.error("load more posts error", err);
+    } finally {
+      setLoadingMore(false);
+    }
   };
 
+  // IntersectionObserver for infinite scroll
   useEffect(() => {
-    if (!loadMoreRef.current) return;
+    if (!sentinelRef.current) return;
     const obs = new IntersectionObserver(
       (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            loadMore();
-          }
-        });
+        if (entries[0].isIntersecting && hasMore && !loadingMore) {
+          loadMore();
+        }
       },
-      { rootMargin: "200px" }
+      { root: null, rootMargin: "200px", threshold: 0.1 }
     );
-    obs.observe(loadMoreRef.current);
+    obs.observe(sentinelRef.current);
     return () => obs.disconnect();
-  }, [lastDoc, hasMore]);
-
-  if (!posts.length && !loading)
-    return <p className="text-center mt-4">게시글이 없습니다.</p>;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sentinelRef.current, hasMore, loadingMore, lastDoc]);
 
   return (
-    <div className="space-y-4 max-w-2xl mx-auto">
-      {posts.map((post) => (
-        <PostCard key={post.id} {...post} />
-      ))}
-      <div ref={loadMoreRef} className="h-8 flex items-center justify-center">
-        {loading ? (
-          <span>로딩...</span>
-        ) : hasMore ? (
-          <span>스크롤로 더 로드</span>
-        ) : (
-          <span>더 이상 게시글이 없습니다.</span>
-        )}
-      </div>
+    <div>
+      {loading ? (
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <div
+              key={i}
+              className="animate-pulse bg-white rounded-xl shadow p-4 h-28"
+            />
+          ))}
+        </div>
+      ) : (
+        <>
+          {posts.length === 0 ? (
+            <div className="bg-white rounded-xl shadow p-6 text-center text-gray-500">
+              아직 게시물이 없습니다.
+            </div>
+          ) : (
+            posts.map((p) => <PostCard key={p.id} post={p} />)
+          )}
+
+          <div ref={sentinelRef} className="h-6" />
+
+          {loadingMore && (
+            <div className="text-center text-sm text-gray-500 py-4">
+              로딩 중...
+            </div>
+          )}
+
+          {!hasMore && posts.length > 0 && (
+            <div className="text-center text-sm text-gray-400 py-4">
+              더 이상 게시물이 없습니다.
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 };
 
-export default PostList;
+export default PostLists;
