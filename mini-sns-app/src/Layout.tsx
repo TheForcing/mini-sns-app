@@ -36,24 +36,12 @@ const Layout: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
       <Navbar
         links={links}
-        logo={
-          <span className="text-2xl font-extrabold bg-gradient-to-r from-blue-500 to-purple-600 text-transparent bg-clip-text">
-            MySNS
-          </span>
-        }
-        user={
-          user
-            ? {
-                displayName: user.displayName ?? undefined,
-                photoURL: user.photoURL ?? undefined,
-              }
-            : null
-        }
+        logo={<span className="text-2xl font-extrabold bg-gradient-to-r from-blue-500 to-purple-600 text-transparent bg-clip-text">MySNS</span>}
+        user={user ? { displayName: user.displayName ?? undefined, photoURL: user.photoURL ?? undefined } : null}
         onLogout={handleLogout}
         onSearch={(q) => {
           // 기본 검색 이동
-          if (q && q.trim())
-            navigate(`/search?q=${encodeURIComponent(q.trim())}`);
+          if (q && q.trim()) navigate(`/search?q=${encodeURIComponent(q.trim())}`);
         }}
       />
 

@@ -41,25 +41,17 @@ const PostLists: React.FC = () => {
   useEffect(() => {
     // initial load with realtime for top PAGE_SIZE
     setLoading(true);
-    const q = query(
-      collection(db, "posts"),
-      orderBy("createdAt", "desc"),
-      limit(PAGE_SIZE)
-    );
-    const unsub = onSnapshot(
-      q,
-      (snap) => {
-        const fresh = snap.docs.map((d) => toPost(d));
-        setPosts(fresh);
-        setLastDoc(snap.docs[snap.docs.length - 1] ?? null);
-        setHasMore(snap.docs.length === PAGE_SIZE);
-        setLoading(false);
-      },
-      (err) => {
-        console.error("post snapshot error", err);
-        setLoading(false);
-      }
-    );
+    const q = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(PAGE_SIZE));
+    const unsub = onSnapshot(q, (snap) => {
+      const fresh = snap.docs.map((d) => toPost(d));
+      setPosts(fresh);
+      setLastDoc(snap.docs[snap.docs.length - 1] ?? null);
+      setHasMore(snap.docs.length === PAGE_SIZE);
+      setLoading(false);
+    }, (err) => {
+      console.error("post snapshot error", err);
+      setLoading(false);
+    });
 
     return () => unsub();
   }, []);
@@ -68,12 +60,7 @@ const PostLists: React.FC = () => {
     if (!hasMore || loadingMore || !lastDoc) return;
     setLoadingMore(true);
     try {
-      const q = query(
-        collection(db, "posts"),
-        orderBy("createdAt", "desc"),
-        startAfter(lastDoc),
-        limit(PAGE_SIZE)
-      );
+      const q = query(collection(db, "posts"), orderBy("createdAt", "desc"), startAfter(lastDoc), limit(PAGE_SIZE));
       const snap = await getDocs(q);
       const more = snap.docs.map((d) => toPost(d));
       setPosts((prev) => [...prev, ...more]);
@@ -107,18 +94,13 @@ const PostLists: React.FC = () => {
       {loading ? (
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
-            <div
-              key={i}
-              className="animate-pulse bg-white rounded-xl shadow p-4 h-28"
-            />
+            <div key={i} className="animate-pulse bg-white rounded-xl shadow p-4 h-28" />
           ))}
         </div>
       ) : (
         <>
           {posts.length === 0 ? (
-            <div className="bg-white rounded-xl shadow p-6 text-center text-gray-500">
-              아직 게시물이 없습니다.
-            </div>
+            <div className="bg-white rounded-xl shadow p-6 text-center text-gray-500">아직 게시물이 없습니다.</div>
           ) : (
             posts.map((p) => <PostCard key={p.id} post={p} />)
           )}
@@ -126,15 +108,11 @@ const PostLists: React.FC = () => {
           <div ref={sentinelRef} className="h-6" />
 
           {loadingMore && (
-            <div className="text-center text-sm text-gray-500 py-4">
-              로딩 중...
-            </div>
+            <div className="text-center text-sm text-gray-500 py-4">로딩 중...</div>
           )}
 
           {!hasMore && posts.length > 0 && (
-            <div className="text-center text-sm text-gray-400 py-4">
-              더 이상 게시물이 없습니다.
-            </div>
+            <div className="text-center text-sm text-gray-400 py-4">더 이상 게시물이 없습니다.</div>
           )}
         </>
       )}

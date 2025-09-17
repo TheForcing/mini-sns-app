@@ -1,12 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  doc,
-  onSnapshot,
-  updateDoc,
-  arrayUnion,
-  arrayRemove,
-} from "firebase/firestore";
+import { doc, onSnapshot, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 import { db, auth } from "../../../firebase";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { formatDistanceToNow } from "date-fns";
@@ -48,9 +42,7 @@ const PostCard: React.FC<Props> = ({ post }) => {
       const data = snap.data() as any;
       const likeList: string[] = data?.likes ?? [];
       setLikes(likeList);
-      setIsLiked(
-        Boolean(auth.currentUser && likeList.includes(auth.currentUser.uid))
-      );
+      setIsLiked(Boolean(auth.currentUser && likeList.includes(auth.currentUser.uid)));
     });
     return () => unsub();
   }, [post.id]);
@@ -84,27 +76,18 @@ const PostCard: React.FC<Props> = ({ post }) => {
       <div className="flex gap-3">
         <div>
           <Link to={`/user/${post.authorId}`}>
-            <Avatar
-              src={post.authorPhoto ?? null}
-              name={post.authorName ?? "익명"}
-            />
+            <Avatar src={post.authorPhoto ?? null} name={post.authorName ?? "익명"} />
           </Link>
         </div>
 
         <div className="flex-1">
           <div className="flex justify-between items-start gap-3">
             <div>
-              <Link
-                to={`/user/${post.authorId}`}
-                className="font-semibold text-gray-800 hover:underline"
-              >
+              <Link to={`/user/${post.authorId}`} className="font-semibold text-gray-800 hover:underline">
                 {post.authorName ?? "익명"}
               </Link>
               <div className="text-xs text-gray-400 mt-0.5">
-                {formatDistanceToNow(createdAtDate, {
-                  addSuffix: true,
-                  locale: ko,
-                })}
+                {formatDistanceToNow(createdAtDate, { addSuffix: true, locale: ko })}
               </div>
             </div>
 
@@ -115,9 +98,7 @@ const PostCard: React.FC<Props> = ({ post }) => {
             </div>
           </div>
 
-          <p className="mt-3 text-gray-700 whitespace-pre-wrap">
-            {post.content}
-          </p>
+          <p className="mt-3 text-gray-700 whitespace-pre-wrap">{post.content}</p>
 
           <div className="mt-4 flex items-center gap-4">
             <button
@@ -133,10 +114,7 @@ const PostCard: React.FC<Props> = ({ post }) => {
               <span className="text-gray-600">{likes.length}</span>
             </button>
 
-            <Link
-              to={`/post/${post.id}`}
-              className="text-sm text-gray-600 hover:underline"
-            >
+            <Link to={`/post/${post.id}`} className="text-sm text-gray-600 hover:underline">
               💬 {post.commentsCount ?? 0}
             </Link>
           </div>

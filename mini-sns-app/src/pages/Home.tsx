@@ -32,21 +32,14 @@ const Home: React.FC = () => {
             <h1 className="text-2xl font-extrabold text-blue-600 flex items-center gap-2">
               <span>🔥</span> MySNS 홈
             </h1>
-            <p className="text-sm text-gray-500 mt-1">
-              최신 게시물을 확인해보세요.
-            </p>
+            <p className="text-sm text-gray-500 mt-1">최신 게시물을 확인해보세요.</p>
           </div>
 
           <div className="flex items-center gap-4">
             {userEmail ? (
               <>
-                <div className="text-sm text-gray-700 truncate max-w-[180px]">
-                  {userEmail}
-                </div>
-                <button
-                  onClick={logout}
-                  className="px-4 py-2 rounded-lg bg-gradient-to-r from-red-500 to-pink-500 text-white"
-                >
+                <div className="text-sm text-gray-700 truncate max-w-[180px]">{userEmail}</div>
+                <button onClick={logout} className="px-4 py-2 rounded-lg bg-gradient-to-r from-red-500 to-pink-500 text-white">
                   로그아웃
                 </button>
               </>
