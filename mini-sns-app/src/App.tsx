@@ -7,7 +7,7 @@ import Profile from "./pages/profile/[id]";
 import UserProfile from "./pages/UserProfile";
 import NotificationList from "./features/notification/compoenents/NotificationList";
 import FollowList from "./features/follow/components/FollowList";
-import SearchBar from "./components/SearchBar";
+import SearchBar from "./components/ui/SearchBar";
 import Layout from "./Layout";
 import PostPage from "./pages/PostPages";
 import Feed from "./pages/Feed";
