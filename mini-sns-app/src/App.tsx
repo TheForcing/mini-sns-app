@@ -15,6 +15,7 @@ import CreatePost from "./pages/CreatePost"; // ✅ 글쓰기 페이지
 import { useEffect } from "react";
 import { seedData } from "./utils/seedData";
 import { Toaster } from "react-hot-toast";
+import Container from "./components/ui/Container";
 
 function App() {
   useEffect(() => {
@@ -25,28 +26,30 @@ function App() {
     <BrowserRouter>
       <Toaster position="top-center" />
 
-      <Routes>
-        {/* Layout 안에서 공통 UI 적용 */}
-        <Route element={<Layout centerVertically={false} />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/feed" element={<Feed />} />
-          <Route path="/create" element={<CreatePost />} />{" "}
-          {/* ✅ 글쓰기 라우트 */}
-          <Route path="/profile" element={<Profile />} />
-          <Route
-            path="/profile/:id/followers"
-            element={<FollowList type="followers" userId="" />}
-          />
-          <Route path="/user/:uid" element={<UserProfile />} />
-          <Route path="/notifications" element={<NotificationList />} />
-          <Route path="/search" element={<SearchBar />} />
-          <Route path="/post/:postId" element={<PostPage />} />
-        </Route>
+      <Container>
+        <Routes>
+          {/* Layout 안에서 공통 UI 적용 */}
+          <Route element={<Layout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/feed" element={<Feed />} />
+            <Route path="/create" element={<CreatePost />} />{" "}
+            {/* ✅ 글쓰기 라우트 */}
+            <Route path="/profile" element={<Profile />} />
+            <Route
+              path="/profile/:id/followers"
+              element={<FollowList type="followers" userId="" />}
+            />
+            <Route path="/user/:uid" element={<UserProfile />} />
+            <Route path="/notifications" element={<NotificationList />} />
+            <Route path="/search" element={<SearchBar />} />
+            <Route path="/post/:postId" element={<PostPage />} />
+          </Route>
 
-        {/* Layout 없이 보여줄 페이지 */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-      </Routes>
+          {/* Layout 없이 보여줄 페이지 */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+        </Routes>
+      </Container>
     </BrowserRouter>
   );
 }
