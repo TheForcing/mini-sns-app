@@ -14,10 +14,11 @@ const CreatePost = () => {
     e.preventDefault();
     if (!auth.currentUser) return;
     await addDoc(collection(db, "posts"), {
-      content: content.trim(),
-      authorId: auth.currentUser.uid,
-      authorName: auth.currentUser.displayName || "익명",
-      authorPhoto: auth.currentUser.photoURL || null,
+      content,
+      author: {
+        uid: auth.currentUser.uid,
+        name: auth.currentUser.displayName || "익명",
+      },
       createdAt: serverTimestamp(),
       likes: [],
       commentsCount: 0,

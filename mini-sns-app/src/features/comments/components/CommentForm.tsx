@@ -1,66 +1,112 @@
 import React, { useState } from "react";
-import { addDoc, collection, serverTimestamp, updateDoc, doc, increment } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  serverTimestamp,
+  updateDoc,
+  doc,
+  increment,
+} from "firebase/firestore";
 import { db, auth } from "../../../firebase";
-import Button from "../../../components/ui/Button";
-import Textarea from "../../../components/ui/Textarea";
 
 interface Props {
   postId: string;
 }
 
 const CommentForm: React.FC<Props> = ({ postId }) => {
-  const [content, setContent] = useState<string>("");
+  const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!content.trim()) return;
-    if (!auth.currentUser) {
+    if (!postId) {
+      console.error("CommentForm: postId is missing");
+      alert("게시물 정보가 없습니다.");
+      return;
+    }
+    const user = auth.currentUser;
+    if (!user) {
       alert("로그인이 필요합니다.");
       return;
     }
+    const trimmed = content.trim();
+    if (!trimmed) return;
 
     setLoading(true);
     try {
-      await addDoc(collection(db, "posts", postId, "comments"), {
-        content: content.trim(),
-        author: {
-          uid: auth.currentUser.uid,
-          displayName: auth.currentUser.displayName || "익명",
-          photoURL: auth.currentUser.photoURL || null,
-        },
-        createdAt: serverTimestamp(),
-      });
+      const author = {
+        uid: user.uid,
+        displayName: user.displayName ?? "익명",
+        photoURL: user.photoURL ?? null,
+      };
 
-      // increment commentsCount on the post document
+      // 댓글 문서에 author 객체와 함께 authorId/authorName도 같이 저장 (규칙 호환성 확보)
+      const payload = {
+        content: trimmed,
+        author,
+        authorId: user.uid,
+        authorName: author.displayName,
+        createdAt: serverTimestamp(),
+      };
+
+      const commentRef = await addDoc(
+        collection(db, "posts", postId, "comments"),
+        payload
+      );
+      console.log("댓글 추가 성공, id:", commentRef.id);
+
+      // 댓글 수 안전하게 증가 (비동기이므로 실패해도 댓글은 남음)
       try {
-        await updateDoc(doc(db, "posts", postId), { commentsCount: increment(1) });
-      } catch (err) {
-        console.warn("댓글 수 증가 중 오류:", err);
+        await updateDoc(doc(db, "posts", postId), {
+          commentsCount: increment(1),
+        });
+      } catch (incErr) {
+        console.warn("commentsCount 증가 실패:", incErr);
       }
 
       setContent("");
-    } catch (err) {
-      console.error("댓글 등록 오류:", err);
-      alert("댓글 등록 중 오류가 발생했습니다.");
+    } catch (err: any) {
+      console.error("댓글 등록 실패:", err);
+      // 권한 오류일 경우 명확히 알림
+      if (err?.code === "permission-denied") {
+        alert("권한이 없습니다. Firestore 보안 규칙을 확인하세요.");
+      } else {
+        alert("댓글 등록 중 오류가 발생했습니다.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (content.trim()) handleSubmit();
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit} className="mt-4">
-      <Textarea
-        rows={3}
+      <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
+        onKeyDown={handleKeyDown}
         placeholder="댓글을 입력하세요. (Enter: 전송, Shift+Enter: 줄바꿈)"
-        className="mb-3"
+        rows={3}
+        className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
       />
-      <div className="flex justify-end">
-        <Button type="submit" disabled={!content.trim() || loading}>
+      <div className="flex justify-end mt-2">
+        <button
+          type="submit"
+          disabled={!content.trim() || loading}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition ${
+            content.trim() && !loading
+              ? "bg-blue-600 text-white hover:bg-blue-700"
+              : "bg-gray-200 text-gray-500 cursor-not-allowed"
+          }`}
+        >
           {loading ? "등록 중..." : "등록"}
-        </Button>
+        </button>
       </div>
     </form>
   );
