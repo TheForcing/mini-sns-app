@@ -3,12 +3,14 @@ import { db, storage, auth } from "../../../firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { ImagePlus } from "lucide-react";
+import FileUploader from "./FileUploader";
 
 const CreatePost = () => {
   const [content, setContent] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [files, setFiles] = useState<File[]>([]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -96,7 +98,7 @@ const CreatePost = () => {
         <label className="flex items-center gap-2 text-gray-600 cursor-pointer hover:text-blue-500">
           <ImagePlus className="w-5 h-5" />
           <span className="text-sm">사진 추가</span>
-          <input type="file" className="hidden" onChange={handleImageChange} />
+          <FileUploader onFilesSelected={setFiles} />
         </label>
 
         <button
