@@ -11,7 +11,7 @@ import SearchBar from "./components/ui/SearchBar";
 import Layout from "./Layout";
 import PostPage from "./pages/PostPages";
 import Feed from "./pages/Feed";
-import CreatePost from "./pages/CreatePost"; // ✅ 글쓰기 페이지
+import CreatePost from "./pages/CreatePostWithUpload"; // ✅ 글쓰기 페이지
 import { useEffect } from "react";
 import { seedData } from "./utils/seedData";
 import { Toaster } from "react-hot-toast";

@@ -1,21 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { auth } from "./firebase";
 import { Navbar } from "./components/ui"; // index export
-import { User } from "firebase/auth";
 
 const Layout: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
 
+  // ✅ 로그인 상태 감지
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => {
-      setUser(u);
-    });
+    const unsub = onAuthStateChanged(auth, (u) => setUser(u));
     return () => unsub();
   }, []);
 
+  // ✅ 로그아웃
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -25,6 +24,7 @@ const Layout: React.FC = () => {
     }
   };
 
+  // ✅ 네비게이션 링크
   const links = [
     { to: "/", label: "홈" },
     { to: "/feed", label: "피드" },
@@ -33,26 +33,41 @@ const Layout: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen flex flex-col bg-gray-100">
+      {/* 🔵 상단 네비게이션 */}
       <Navbar
         links={links}
-        logo={<span className="text-2xl font-extrabold bg-gradient-to-r from-blue-500 to-purple-600 text-transparent bg-clip-text">MySNS</span>}
-        user={user ? { displayName: user.displayName ?? undefined, photoURL: user.photoURL ?? undefined } : null}
+        logo={
+          <span className="text-2xl font-extrabold text-blue-600 hover:text-blue-700 transition">
+            MySNS
+          </span>
+        }
+        user={
+          user
+            ? {
+                displayName: user.displayName ?? "사용자",
+                photoURL: user.photoURL ?? undefined,
+              }
+            : null
+        }
         onLogout={handleLogout}
         onSearch={(q) => {
-          // 기본 검색 이동
-          if (q && q.trim()) navigate(`/search?q=${encodeURIComponent(q.trim())}`);
+          if (q && q.trim()) {
+            navigate(`/search?q=${encodeURIComponent(q.trim())}`);
+          }
         }}
       />
 
-      <main className="flex-1 flex justify-center items-start px-4 py-6">
-        <div className="w-full max-w-3xl">
+      {/* 🟢 중앙 정렬 메인 컨텐츠 */}
+      <main className="flex-1 flex justify-center px-4 py-6">
+        <div className="w-full max-w-2xl space-y-6">
           <Outlet />
         </div>
       </main>
 
-      <footer className="bg-gray-200 py-3 text-center text-sm text-gray-600">
-        © {new Date().getFullYear()} MySNS. All rights reserved.
+      {/* ⚪️ 푸터 */}
+      <footer className="bg-white border-t border-gray-200 py-4 text-center text-sm text-gray-500">
+        © {new Date().getFullYear()} MySNS — All rights reserved.
       </footer>
     </div>
   );

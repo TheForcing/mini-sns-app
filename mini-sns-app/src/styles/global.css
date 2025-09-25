@@ -2,66 +2,58 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  body {
-    @apply bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100;
-    font-family: "Inter", sans-serif;
-  }
+/* 기본 바디 */
+:root {
+  --fb-blue: #1877f2;
+  --surface: #ffffff;
+  --muted: #6b7280;
 }
 
-@layer components {
-  /* 카드 공통 */
-  .card {
-    @apply bg-white dark:bg-gray-800 rounded-lg shadow p-4;
-  }
+/* 기본 폰트(선택) */
+body {
+  @apply bg-gray-50 text-gray-800 antialiased;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial;
+}
 
-  /* 버튼 */
-  .btn {
-    @apply px-4 py-2 rounded-md font-medium transition;
-  }
-  .btn-primary {
-    @apply bg-blue-500 text-white hover:bg-blue-600;
-  }
-  .btn-secondary {
-    @apply bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200;
-  }
-  .btn-danger {
-    @apply bg-red-500 text-white hover:bg-red-600;
-  }
+/* 컨테이너 중앙정렬(모든 페이지 공통) */
+.app-container {
+  @apply min-h-screen flex justify-center;
+}
+.app-inner {
+  @apply w-full max-w-3xl px-4 py-6;
+}
 
-  /* 입력 필드 */
-  .input {
-    @apply w-full px-3 py-2 border rounded-md outline-none
-    border-gray-300 dark:border-gray-600
-    focus:ring-2 focus:ring-blue-500;
-  }
+/* 카드 공통 스타일 (facebook-like) */
+.card {
+  @apply bg-white rounded-xl2 shadow-card border border-gray-100;
+}
 
-  /* 제목/본문/메타 텍스트 */
-  .heading {
-    @apply text-xl font-bold text-gray-900 dark:text-gray-100;
-  }
-  .meta {
-    @apply text-sm text-gray-500 dark:text-gray-400;
-  }
-  .centered-content {
-    @apply flex flex-col items-center justify-center text-center;
-  }
+/* 입력 기본 */
+.input {
+  @apply w-full border border-gray-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-fb-200;
+}
 
-  /* 카드형 중앙 콘텐츠: 내부 여백, 그림자, 너비 제어 */
-  .centered-card {
-    @apply centered-content bg-white dark:bg-gray-800 rounded-xl shadow p-6 w-full max-w-2xl mx-auto;
-  }
+/* 버튼 프라이머리 */
+.btn-primary {
+  @apply inline-flex items-center justify-center px-4 py-2 rounded-md bg-fb-500 text-white font-semibold shadow-sm hover:bg-fb-600;
+}
+.btn-secondary {
+  @apply inline-flex items-center justify-center px-3 py-1.5 rounded-md bg-gray-100 text-gray-800 hover:bg-gray-200;
+}
 
-  /* 폼 항목 중앙 정렬 전용(입력 넓이 통제) */
-  .centered-form {
-    @apply flex flex-col items-center w-full max-w-md mx-auto;
-  }
+/* Post 헤더(작성자 라인) */
+.post-meta {
+  @apply flex items-center gap-3;
+}
+.post-author {
+  @apply font-semibold text-gray-800;
+}
+.post-time {
+  @apply text-xs text-gray-400;
+}
 
-  .centered-input {
-    @apply input w-full;
-  }
-
-  .centered-btn {
-    @apply btn btn-primary mt-3 w-full;
-  }
+/* 댓글 박스 */
+.comment {
+  @apply flex gap-3 p-3 rounded-md hover:bg-gray-50;
 }
