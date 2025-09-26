@@ -1,84 +1,108 @@
-import { Link, useNavigate } from "react-router-dom";
-import { auth } from "../../firebase";
-import { signOut, onAuthStateChanged, User } from "firebase/auth";
-import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { User } from "firebase/auth";
 
-const NavBar = () => {
-  const navigate = useNavigate();
-  const [user, setUser] = useState<User | null>(auth.currentUser);
+interface NavbarProps {
+  links: { to: string; label: string }[];
+  logo: React.ReactNode;
+  user: { displayName?: string; photoURL?: string } | null;
+  onLogout: () => void;
+  onSearch: (query: string) => void;
+}
 
-  // ✅ 로그인 상태 감지
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
-      setUser(u);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  // ✅ 로그아웃
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      alert("로그아웃 되었습니다.");
-      navigate("/login");
-    } catch (error) {
-      console.error("로그아웃 실패:", error);
-      alert("로그아웃에 실패했습니다.");
-    }
+const Navbar: React.FC<NavbarProps> = ({
+  links,
+  logo,
+  user,
+  onLogout,
+  onSearch,
+}) => {
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const input = form.querySelector("input") as HTMLInputElement;
+    if (input?.value) onSearch(input.value);
   };
 
   return (
-    <header className="w-full bg-white shadow-sm sticky top-0 z-40">
-      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-        {/* 로고 */}
-        <Link to="/feed" className="text-2xl font-extrabold text-fb-500">
-          MySNS
+    <nav className="sticky top-0 z-50 flex items-center justify-between px-4 py-2 bg-white shadow border-b border-gray-200">
+      {/* 🔵 Left: Logo */}
+      <div className="flex items-center space-x-4">
+        <Link
+          to="/"
+          className="text-blue-600 font-bold text-2xl hover:opacity-90"
+        >
+          {logo}
         </Link>
+      </div>
 
-        {/* 중앙 검색창 */}
-        <div className="flex-1 max-w-md mx-6">
+      {/* 🟢 Center: Search */}
+      <div className="flex-1 flex justify-center px-4">
+        <form
+          onSubmit={handleSearch}
+          className="w-full max-w-md flex items-center bg-gray-100 rounded-full px-3 py-1"
+        >
           <input
             type="text"
-            placeholder="검색"
-            className="w-full border border-gray-200 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-fb-200"
+            placeholder="검색..."
+            className="flex-1 bg-transparent outline-none px-2 text-sm"
           />
-        </div>
-
-        {/* 우측 사용자 메뉴 */}
-        <div className="flex items-center gap-3">
-          {user ? (
-            <>
-              <Link
-                to="/profile"
-                className="flex items-center gap-2 hover:bg-gray-100 px-3 py-1.5 rounded-md transition"
-              >
-                <img
-                  src={user.photoURL ?? "/default-avatar.png"}
-                  alt="avatar"
-                  className="w-8 h-8 rounded-full object-cover"
-                />
-                <span className="hidden md:inline text-sm font-medium text-gray-700">
-                  {user.displayName ?? "사용자"}
-                </span>
-              </Link>
-              <button onClick={handleLogout} className="btn-secondary text-sm">
-                로그아웃
-              </button>
-            </>
-          ) : (
-            <>
-              <Link to="/login" className="btn-primary text-sm">
-                로그인
-              </Link>
-              <Link to="/register" className="btn-secondary text-sm">
-                회원가입
-              </Link>
-            </>
-          )}
-        </div>
+          <button type="submit" className="text-gray-500 hover:text-gray-700">
+            🔍
+          </button>
+        </form>
       </div>
-    </header>
+
+      {/* 🔴 Right: Links + User */}
+      <div className="flex items-center space-x-4">
+        {links.map((l) => (
+          <Link
+            key={l.to}
+            to={l.to}
+            className="text-gray-700 hover:text-blue-600 font-medium"
+          >
+            {l.label}
+          </Link>
+        ))}
+
+        {user ? (
+          <div className="flex items-center space-x-2">
+            {user.photoURL ? (
+              <img
+                src={user.photoURL}
+                alt="프로필"
+                className="w-8 h-8 rounded-full object-cover border"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600">
+                {user.displayName?.charAt(0) ?? "U"}
+              </div>
+            )}
+            <span className="text-sm font-medium">
+              {user.displayName ?? "사용자"}
+            </span>
+            <button
+              onClick={onLogout}
+              className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-full text-sm transition"
+            >
+              로그아웃
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center space-x-3">
+            <Link to="/login" className="text-sm text-blue-600 hover:underline">
+              로그인
+            </Link>
+            <Link
+              to="/register"
+              className="text-sm text-blue-600 hover:underline"
+            >
+              회원가입
+            </Link>
+          </div>
+        )}
+      </div>
+    </nav>
   );
 };
 
-export default NavBar;
+export default Navbar;

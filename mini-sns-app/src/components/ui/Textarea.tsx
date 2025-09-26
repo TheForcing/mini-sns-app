@@ -15,14 +15,17 @@ const Textarea: React.FC<Props> = ({
   ...rest
 }) => {
   return (
-    <label className="w-full">
+    <label className="w-full block">
       {label && (
         <div className="mb-1 text-sm font-medium text-gray-700">{label}</div>
       )}
       <textarea
         rows={rows}
         className={cn(
-          "w-full border rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-400",
+          // ✅ Facebook 스타일: 라운드 + 배경 회색 + hover/focus 강조
+          "w-full px-4 py-3 text-sm rounded-2xl border border-gray-300 bg-gray-50 placeholder-gray-400",
+          "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition",
+          "hover:bg-gray-100 resize-none shadow-sm",
           className
         )}
         {...rest}
