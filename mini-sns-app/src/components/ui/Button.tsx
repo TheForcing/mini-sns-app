@@ -1,56 +1,30 @@
 import React from "react";
 import { cn } from "../../utils/classNames";
 
-export type ButtonVariant = "primary" | "secondary" | "danger" | "ghost";
-export type ButtonSize = "sm" | "md" | "lg";
-
 interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: ButtonVariant;
-  size?: ButtonSize;
-  full?: boolean;
+  variant?: "primary" | "secondary" | "danger";
 }
-
-const variantMap: Record<ButtonVariant, string> = {
-  primary: "bg-blue-600 hover:bg-blue-700 text-white",
-  secondary: "bg-gray-100 hover:bg-gray-200 text-gray-800",
-  danger: "bg-red-500 hover:bg-red-600 text-white",
-  ghost: "bg-transparent hover:bg-gray-100 text-gray-800",
-};
-
-const sizeMap: Record<ButtonSize, string> = {
-  sm: "px-3 py-1.5 text-sm",
-  md: "px-4 py-2 text-sm md:text-base",
-  lg: "px-6 py-3 text-base",
-};
 
 const Button: React.FC<Props> = ({
   variant = "primary",
-  size = "md",
-  full = false,
   className,
   children,
-  disabled,
   ...rest
 }) => {
   const base =
-    "rounded-lg font-medium transition transform active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-offset-2";
-  const variantCls = variantMap[variant];
-  const sizeCls = sizeMap[size];
-  const fullCls = full ? "w-full" : "";
+    "px-4 py-2 rounded-md font-medium text-sm transition shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-1";
+
+  const variants = {
+    primary:
+      "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 focus:ring-blue-500",
+    secondary:
+      "bg-gray-100 text-gray-800 hover:bg-gray-200 active:bg-gray-300 focus:ring-gray-400",
+    danger:
+      "bg-red-500 text-white hover:bg-red-600 active:bg-red-700 focus:ring-red-400",
+  };
 
   return (
-    <button
-      className={cn(
-        base,
-        variantCls,
-        sizeCls,
-        fullCls,
-        disabled ? "opacity-50 cursor-not-allowed" : "shadow-sm",
-        className
-      )}
-      disabled={disabled}
-      {...rest}
-    >
+    <button className={cn(base, variants[variant], className)} {...rest}>
       {children}
     </button>
   );

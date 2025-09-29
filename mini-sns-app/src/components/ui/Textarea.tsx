@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { cn } from "../../utils/classNames";
 
 interface Props extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
@@ -14,20 +14,33 @@ const Textarea: React.FC<Props> = ({
   className,
   ...rest
 }) => {
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  // ✅ 자동 높이 조절
+  const autoResize = () => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto"; // 높이 초기화
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  };
+
+  useEffect(() => {
+    autoResize(); // 초기 로드 시 1회 실행
+  }, []);
+
   return (
     <label className="w-full block">
       {label && (
         <div className="mb-1 text-sm font-medium text-gray-700">{label}</div>
       )}
       <textarea
+        ref={textareaRef}
         rows={rows}
         className={cn(
-          // ✅ Facebook 스타일: 라운드 + 배경 회색 + hover/focus 강조
-          "w-full px-4 py-3 text-sm rounded-2xl border border-gray-300 bg-gray-50 placeholder-gray-400",
-          "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition",
-          "hover:bg-gray-100 resize-none shadow-sm",
+          "w-full border rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-400 transition",
           className
         )}
+        onInput={autoResize} // ✅ 입력할 때마다 높이 자동 조절
         {...rest}
       />
       {error && <div className="mt-1 text-xs text-red-500">{error}</div>}

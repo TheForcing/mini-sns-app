@@ -14,6 +14,7 @@ import {
 } from "firebase/storage";
 import { db, auth, storage } from "../firebase";
 import { useNavigate } from "react-router-dom";
+import Textarea from "../components/ui/Textarea"; // ✅ 새 Textarea 적용
 
 type Attachment = {
   url: string;
@@ -23,7 +24,7 @@ type Attachment = {
 };
 
 const MAX_FILES = 5;
-const MAX_FILE_MB = 10; // 파일 1개 최대 10MB (필요시 조정)
+const MAX_FILE_MB = 10;
 
 const CreatePostWithUpload: React.FC = () => {
   const [content, setContent] = useState("");
@@ -35,13 +36,11 @@ const CreatePostWithUpload: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // create object URL previews
     const urls = files.map((f) =>
       f.type.startsWith("image/") ? URL.createObjectURL(f) : ""
     );
     setPreviews(urls);
 
-    // cleanup on unmount / files change
     return () => {
       urls.forEach((url) => url && URL.revokeObjectURL(url));
     };
@@ -51,13 +50,11 @@ const CreatePostWithUpload: React.FC = () => {
     if (!selected) return;
     const arr = Array.from(selected);
 
-    // validate count
     if (files.length + arr.length > MAX_FILES) {
       alert(`최대 ${MAX_FILES}개 까지 업로드 가능합니다.`);
       return;
     }
 
-    // validate size
     for (const f of arr) {
       if (f.size > MAX_FILE_MB * 1024 * 1024) {
         alert(`${f.name} 파일이 너무 큽니다. (최대 ${MAX_FILE_MB}MB)`);
@@ -68,15 +65,13 @@ const CreatePostWithUpload: React.FC = () => {
     setFiles((prev) => [...prev, ...arr]);
   };
 
-  // drag & drop handlers
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
-    e.stopPropagation();
     onFilesSelected(e.dataTransfer.files);
   };
+
   const onDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    e.stopPropagation();
   };
 
   const removeFile = (index: number) => {
@@ -91,7 +86,6 @@ const CreatePostWithUpload: React.FC = () => {
       )}`;
       const path = `posts/${postId}/${safeName}`;
       const sRef = storageRef(storage, path);
-      // metadata: include uploader uid for future rules (optional)
       const metadata = {
         contentType: file.type,
         customMetadata: { uid: auth.currentUser?.uid ?? "" },
@@ -108,7 +102,6 @@ const CreatePostWithUpload: React.FC = () => {
           setProgressMap((prev) => ({ ...prev, [file.name]: pct }));
         },
         (error) => {
-          console.error("Upload error", error);
           reject(error);
         },
         async () => {
@@ -143,7 +136,6 @@ const CreatePostWithUpload: React.FC = () => {
     setUploading(true);
 
     try {
-      // 1) 먼저 포스트 문서 생성 (attachments는 빈 배열으로 생성)
       const postRef = await addDoc(collection(db, "posts"), {
         content: content.trim(),
         author: {
@@ -151,7 +143,7 @@ const CreatePostWithUpload: React.FC = () => {
           displayName: auth.currentUser.displayName || "익명",
           photoURL: auth.currentUser.photoURL || null,
         },
-        authorId: auth.currentUser.uid, // 규칙 호환성
+        authorId: auth.currentUser.uid,
         authorName: auth.currentUser.displayName || "익명",
         createdAt: serverTimestamp(),
         likes: [],
@@ -159,27 +151,22 @@ const CreatePostWithUpload: React.FC = () => {
         attachments: [],
       });
 
-      // 2) files 업로드 (병렬 처리)
       const attachments: Attachment[] = [];
       for (const file of files) {
-        // sequential로 진행해도 되지만, 여기선 하나씩 진행하여 progress를 더 잘 보여줌
         const result = await uploadFile(postRef.id, file);
         attachments.push(result);
       }
 
-      // 3) post 문서에 attachments 업데이트
       if (attachments.length > 0) {
         await updateDoc(doc(db, "posts", postRef.id), { attachments });
       }
 
-      // 4) 완료 처리 (초기화 및 리다이렉트)
       setContent("");
       setFiles([]);
       setProgressMap({});
       alert("게시글이 성공적으로 업로드되었습니다.");
       navigate(`/post/${postRef.id}`);
     } catch (err: any) {
-      console.error("게시글 업로드 중 오류:", err);
       alert(err?.message || "업로드 중 오류가 발생했습니다.");
     } finally {
       setUploading(false);
@@ -189,11 +176,11 @@ const CreatePostWithUpload: React.FC = () => {
   return (
     <div className="bg-white rounded-xl shadow p-5">
       <form onSubmit={handleSubmit} className="space-y-4">
-        <textarea
+        {/* ✅ Textarea 교체 */}
+        <Textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="무슨 생각을 하고 있나요?"
-          className="w-full border rounded-lg p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-400"
           rows={4}
           disabled={uploading}
         />
@@ -227,7 +214,6 @@ const CreatePostWithUpload: React.FC = () => {
             </div>
           </div>
 
-          {/* 선택 파일 리스트 / previews */}
           {files.length > 0 && (
             <div className="mt-3 grid grid-cols-3 gap-3">
               {files.map((f, idx) => (
@@ -249,7 +235,6 @@ const CreatePostWithUpload: React.FC = () => {
                     )}
                   </div>
 
-                  {/* 파일명 & remove */}
                   <div className="flex items-center justify-between mt-2">
                     <div className="text-xs text-gray-600 truncate max-w-[120px]">
                       {f.name}
@@ -264,7 +249,6 @@ const CreatePostWithUpload: React.FC = () => {
                     </button>
                   </div>
 
-                  {/* 진행률 바 */}
                   {progressMap[f.name] != null && (
                     <div className="mt-2">
                       <div className="w-full bg-gray-200 rounded h-2">

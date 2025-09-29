@@ -8,6 +8,7 @@ import {
   increment,
 } from "firebase/firestore";
 import { db, auth } from "../../../firebase";
+import { Textarea } from "../../../components/ui";
 
 interface Props {
   postId: string;
@@ -87,13 +88,12 @@ const CommentForm: React.FC<Props> = ({ postId }) => {
 
   return (
     <form onSubmit={handleSubmit} className="mt-4">
-      <textarea
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder="댓글을 입력하세요. (Enter: 전송, Shift+Enter: 줄바꿈)"
-        rows={3}
-        className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+      <Textarea
+        placeholder="댓글을 입력하세요..."
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+        rows={2}
+        className="text-sm"
       />
       <div className="flex justify-end mt-2">
         <button
