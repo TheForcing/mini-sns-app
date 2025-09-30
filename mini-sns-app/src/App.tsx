@@ -16,6 +16,7 @@ import { useEffect } from "react";
 import { seedData } from "./utils/seedData";
 import { Toaster } from "react-hot-toast";
 import Container from "./components/ui/Container";
+import Adminboard from "../src/features/admin/components/AdminBoard";
 
 function App() {
   useEffect(() => {
@@ -48,6 +49,7 @@ function App() {
           {/* Layout 없이 보여줄 페이지 */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/admin" element={<Adminboard />} />
         </Routes>
       </Container>
     </BrowserRouter>
