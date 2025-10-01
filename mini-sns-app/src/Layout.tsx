@@ -1,20 +1,19 @@
+// src/Layout.tsx
 import React, { useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { auth } from "./firebase";
-import { Navbar } from "./components/ui"; // index export
+import { Navbar } from "./components/ui";
 
 const Layout: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
 
-  // ✅ 로그인 상태 감지
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => setUser(u));
     return () => unsub();
   }, []);
 
-  // ✅ 로그아웃
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -24,7 +23,6 @@ const Layout: React.FC = () => {
     }
   };
 
-  // ✅ 네비게이션 링크
   const links = [
     { to: "/", label: "홈" },
     { to: "/feed", label: "피드" },
@@ -34,40 +32,33 @@ const Layout: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
-      {/* 🔵 상단 네비게이션 */}
       <Navbar
         links={links}
         logo={
-          <span className="text-2xl font-extrabold text-blue-600 hover:text-blue-700 transition">
-            MySNS
-          </span>
+          <span className="text-2xl font-extrabold text-blue-600">MySNS</span>
         }
         user={
           user
             ? {
-                displayName: user.displayName ?? "사용자",
+                displayName: user.displayName ?? undefined,
                 photoURL: user.photoURL ?? undefined,
               }
             : null
         }
         onLogout={handleLogout}
         onSearch={(q) => {
-          if (q && q.trim()) {
-            navigate(`/search?q=${encodeURIComponent(q.trim())}`);
-          }
+          if (q?.trim()) navigate(`/search?q=${encodeURIComponent(q.trim())}`);
         }}
       />
 
-      {/* 🟢 중앙 정렬 메인 컨텐츠 */}
       <main className="flex-1 flex justify-center px-4 py-6">
-        <div className="w-full max-w-2xl space-y-6">
+        <div className="w-full max-w-3xl">
           <Outlet />
         </div>
       </main>
 
-      {/* ⚪️ 푸터 */}
-      <footer className="bg-white border-t border-gray-200 py-4 text-center text-sm text-gray-500">
-        © {new Date().getFullYear()} MySNS — All rights reserved.
+      <footer className="bg-gray-200 py-3 text-center text-sm text-gray-600">
+        © {new Date().getFullYear()} MySNS. All rights reserved.
       </footer>
     </div>
   );
