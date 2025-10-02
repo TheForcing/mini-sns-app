@@ -4,6 +4,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { auth } from "./firebase";
 import { Navbar } from "./components/ui";
+import NotificationsIcon from "./features/notification/compoenents/NotificationsIcon";
 
 const Layout: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -50,7 +51,7 @@ const Layout: React.FC = () => {
           if (q?.trim()) navigate(`/search?q=${encodeURIComponent(q.trim())}`);
         }}
       />
-
+      <NotificationsIcon />
       <main className="flex-1 flex justify-center px-4 py-6">
         <div className="w-full max-w-3xl">
           <Outlet />

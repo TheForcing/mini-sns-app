@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
+import ProfileHeader from "../features/profile/components/ProfileHeader";
 
 const Profile = () => {
   const { uid } = useParams();
@@ -29,6 +30,7 @@ const Profile = () => {
   return (
     <div className="centered-content max-w-2xl mx-auto px-4 py-6">
       <div className="bg-white p-6 rounded-lg shadow flex items-center space-x-4">
+        <ProfileHeader />
         <img
           src={user.photoURL || "/default-avatar.png"}
           alt="프로필"

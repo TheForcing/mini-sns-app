@@ -2,6 +2,8 @@
 import React from "react";
 import CreatePostWithUpload from "../pages/CreatePostWithUpload";
 import PostLists from "../features/post/components/PostLists";
+import StoriesBar from "../features/stories/StoriesBar";
+import ReactionBar from "../features/reactions/ReactionBar";
 
 const Home: React.FC = () => {
   return (
@@ -10,6 +12,8 @@ const Home: React.FC = () => {
       <CreatePostWithUpload />
 
       {/* 피드 목록 */}
+      <StoriesBar />
+      <ReactionBar />
       <PostLists />
     </div>
   );
