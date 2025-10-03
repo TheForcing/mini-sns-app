@@ -1,65 +1,45 @@
-// src/features/post/components/PostCard.tsx
-import React from "react";
-import { Link } from "react-router-dom";
-import { Post } from "../types";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import CreateComment from "../../comments/components/CreateComment";
 
-interface Props {
-  post: Post;
-}
+const PostCard = ({ post }: { post: any }) => {
+  const navigate = useNavigate();
+  const [showComments, setShowComments] = useState(false);
 
-const PostCard: React.FC<Props> = ({ post }) => {
+  const handleCardClick = () => {
+    navigate(`/post/${post.id}`);
+  };
+
+  const toggleComments = (e: React.MouseEvent) => {
+    e.stopPropagation(); // ✅ 카드 클릭 이벤트 막기
+    setShowComments((prev) => !prev);
+  };
+
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
-      {/* 작성자 정보 */}
-      <div className="flex items-center px-4 py-3">
-        <img
-          src={post.authorPhoto || "https://i.pravatar.cc/40"}
-          alt={post.authorName}
-          className="w-10 h-10 rounded-full object-cover"
-        />
-        <div className="ml-3">
-          <div className="font-semibold text-gray-800">{post.authorName}</div>
-          <div className="text-xs text-gray-500">
-            {post.createdAt?.toDate
-              ? post.createdAt.toDate().toLocaleString()
-              : "방금 전"}
-          </div>
-        </div>
-      </div>
-
-      {/* 본문 */}
-      <div className="px-4 pb-3">
-        <p className="text-gray-800 text-sm whitespace-pre-line">
-          {post.content}
-        </p>
-
-        {/* 첨부 이미지 */}
-        {(post.attachments?.length ?? 0) > 0 && (
-          <div className="mt-3">
-            {post.attachments?.map((att, idx) => (
-              <img
-                key={idx}
-                src={att.url}
-                alt={att.name}
-                className="rounded-md w-full max-h-[500px] object-cover"
-              />
-            ))}
-          </div>
-        )}
-      </div>
+    <div
+      className="bg-white rounded-xl shadow p-4 mb-4 cursor-pointer"
+      onClick={handleCardClick}
+    >
+      {/* 게시글 본문 */}
+      <p className="text-gray-800 mb-3">{post.content}</p>
 
       {/* 액션 버튼 */}
-      <div className="border-t border-gray-100 px-4 py-2 flex justify-between text-gray-600 text-sm">
-        <button className="flex-1 py-2 hover:bg-gray-100 rounded-md">
-          👍 좋아요 {post.likes?.length || 0}
-        </button>
-        <Link
-          to={`/post/${post.id}`}
-          className="flex-1 py-2 text-center hover:bg-gray-100 rounded-md"
+      <div className="flex items-center gap-4 text-sm text-gray-500">
+        <button
+          onClick={toggleComments}
+          className="hover:text-blue-500 transition"
         >
           💬 댓글 {post.commentsCount || 0}
-        </Link>
+        </button>
+        <button className="hover:text-red-500 transition">❤️ 좋아요</button>
       </div>
+
+      {/* 댓글 입력창 (토글) */}
+      {showComments && (
+        <div className="mt-3">
+          <CreateComment postId={post.id} />
+        </div>
+      )}
     </div>
   );
 };
