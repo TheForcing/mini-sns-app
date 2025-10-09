@@ -1,53 +1,45 @@
+// src/features/admin/AdminRoute.tsx
 import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
+import { onAuthStateChanged, User } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../../../firebase";
-import { onAuthStateChanged } from "firebase/auth";
-import { doc, onSnapshot } from "firebase/firestore";
 
-const AdminRoute: React.FC<{ children: React.ReactElement }> = ({
+interface Props {
+  children: React.ReactElement;
+  fallback?: React.ReactElement;
+}
+
+const AdminRoute: React.FC<Props> = ({
   children,
+  fallback = <div>로딩 중...</div>,
 }) => {
   const [checking, setChecking] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    let unsubDoc: (() => void) | undefined;
-    const unsubAuth = onAuthStateChanged(auth, (user) => {
-      if (!user) {
+    const unsub = onAuthStateChanged(auth, async (u: User | null) => {
+      if (!u) {
         setIsAdmin(false);
         setChecking(false);
         return;
       }
-      const userRef = doc(db, "users", user.uid);
-      unsubDoc = onSnapshot(
-        userRef,
-        (snap) => {
-          const d = snap.data() as any;
-          setIsAdmin(Boolean(d?.isAdmin));
-          setChecking(false);
-        },
-        (err) => {
-          console.error("AdminRoute: user snapshot error", err);
-          setIsAdmin(false);
-          setChecking(false);
-        }
-      );
+      try {
+        const snap = await getDoc(doc(db, "users", u.uid));
+        const role = snap.exists() ? (snap.data() as any).role : undefined;
+        setIsAdmin(role === "admin");
+      } catch (err) {
+        console.error("admin check error", err);
+        setIsAdmin(false);
+      } finally {
+        setChecking(false);
+      }
     });
-
-    return () => {
-      unsubAuth();
-      if (unsubDoc) unsubDoc();
-    };
+    return () => unsub();
   }, []);
 
-  if (checking) {
-    return <div className="p-6 text-center">권한 확인 중...</div>;
-  }
-
-  if (!isAdmin) {
-    return <Navigate to="/" replace />;
-  }
-
+  if (checking) return fallback;
+  if (!isAdmin) return <Navigate to="/feed" replace />;
   return children;
 };
 
