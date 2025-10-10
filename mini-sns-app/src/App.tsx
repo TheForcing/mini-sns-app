@@ -4,7 +4,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Profile from "./pages/profile/[id]";
-import UserProfile from "./pages/UserProfile";
+import UserProfile from "./pages/ProfilePage";
 import NotificationPage from "./features/notification/compoenents/NotificationsPage";
 import FollowList from "./features/follow/components/FollowList";
 import SearchBar from "./components/ui/SearchBar";
@@ -16,7 +16,7 @@ import { useEffect } from "react";
 import { seedData } from "./utils/seedData";
 import { Toaster } from "react-hot-toast";
 import Container from "./components/ui/Container";
-import Adminboard from "../src/features/admin/components/AdminBoard";
+import AdminDashBoard from "../src/features/admin/components/AdminDashBoard";
 
 function App() {
   useEffect(() => {
@@ -49,7 +49,7 @@ function App() {
           {/* Layout 없이 보여줄 페이지 */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/admin" element={<Adminboard />} />
+          <Route path="/admin" element={<AdminDashBoard />} />
         </Routes>
       </Container>
     </BrowserRouter>

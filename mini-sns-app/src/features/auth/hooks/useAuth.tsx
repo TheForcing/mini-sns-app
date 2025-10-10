@@ -1,30 +1,28 @@
-// src/features/auth/hooks/useAuth.ts
+// useAuth.ts (간단 훅)
 import { useEffect, useState } from "react";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../../../firebase";
-import { UserProfile } from "../types";
+import { onAuthStateChanged, User } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../../../firebase";
 
-export const useAuth = () => {
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-
+export function useCurrentUser() {
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<any | null>(null);
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
-        setUser({
-          uid: firebaseUser.uid,
-          email: firebaseUser.email!,
-          displayName: firebaseUser.displayName ?? "",
-          photoURL: firebaseUser.photoURL ?? "",
-        });
+    const unsub = onAuthStateChanged(auth, async (u) => {
+      setUser(u);
+      if (u) {
+        const snap = await getDoc(doc(db, "users", u.uid));
+        setProfile(snap.exists() ? snap.data() : null);
+        if (snap.exists() && (snap.data() as any).banned) {
+          // 즉시 로그아웃 처리(또는 별도 UI)
+          await auth.signOut();
+          alert("차단된 계정입니다.");
+        }
       } else {
-        setUser(null);
+        setProfile(null);
       }
-      setLoading(false);
     });
-
-    return () => unsubscribe();
+    return () => unsub();
   }, []);
-
-  return { user, loading };
-};
+  return { user, profile };
+}
