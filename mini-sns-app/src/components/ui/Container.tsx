@@ -1,30 +1,21 @@
-// src/layouts/Container.tsx
 import React from "react";
 
-interface Props {
+interface ContainerProps {
   children: React.ReactNode;
-  leftSidebar?: React.ReactNode;
-  rightSidebar?: React.ReactNode;
 }
 
-const Container = ({ children, leftSidebar, rightSidebar }: Props) => {
+const Container: React.FC<ContainerProps> = ({ children }) => {
   return (
-    <main className="flex justify-center w-full bg-gray-100 min-h-screen pt-16">
-      <div className="flex w-full max-w-7xl px-4 gap-6">
-        {/* 왼쪽 사이드바 */}
-        <aside className="hidden lg:block w-64 sticky top-20 h-[calc(100vh-80px)] overflow-y-auto">
-          {leftSidebar || <div className="text-gray-500">메뉴</div>}
-        </aside>
+    <div className="flex justify-center w-full bg-gray-50 dark:bg-gray-950 min-h-screen">
+      {/* 양옆 여백 or 사이드바 영역 */}
+      <div className="hidden lg:flex w-[18rem]"></div>
 
-        {/* 메인 컨텐츠 */}
-        <div className="flex-1 max-w-2xl">{children}</div>
+      {/* 메인 컨텐츠 (가운데) */}
+      <main className="w-full max-w-2xl px-4 sm:px-6 lg:px-0">{children}</main>
 
-        {/* 오른쪽 사이드바 */}
-        <aside className="hidden xl:block w-72 sticky top-20 h-[calc(100vh-80px)] overflow-y-auto">
-          {rightSidebar || <div className="text-gray-500">추천/알림</div>}
-        </aside>
-      </div>
-    </main>
+      {/* 오른쪽 사이드바 자리 */}
+      <div className="hidden lg:flex w-[18rem]"></div>
+    </div>
   );
 };
 

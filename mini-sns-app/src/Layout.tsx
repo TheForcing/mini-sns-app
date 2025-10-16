@@ -11,6 +11,7 @@ import LeftSideBar from "./components/ui/LeftSideBar";
 const Layout: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => setUser(u));
@@ -33,14 +34,15 @@ const Layout: React.FC = () => {
     { to: "/notifications", label: "알림" },
   ];
 
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  function toggleDarkMode(): void {
-    setIsDarkMode((prev) => !prev);
-  }
+  const toggleDarkMode = () => setIsDarkMode((prev) => !prev);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-100">
+    <div
+      className={`min-h-screen flex flex-col transition-colors duration-300 ${
+        isDarkMode ? "bg-gray-900 text-gray-100" : "bg-gray-100 text-gray-900"
+      }`}
+    >
+      {/* ✅ 상단 네비게이션 */}
       <Navbar
         links={links}
         logo={
@@ -59,22 +61,41 @@ const Layout: React.FC = () => {
           if (q?.trim()) navigate(`/search?q=${encodeURIComponent(q.trim())}`);
         }}
       />
-      <NotificationsIcon />
-      <LeftSideBar
-        user={{
-          displayName: "사용자",
-          photoURL: "https://i.pravatar.cc/40?img=10",
-        }}
-        isDarkMode={isDarkMode}
-        toggleDarkMode={toggleDarkMode}
-      />
-      <main className="flex-1 flex justify-center px-4 py-6">
-        <div className="w-full max-w-3xl">
-          <Outlet />
+
+      {/* ✅ 본문 영역 (3열 구조) */}
+      <div className="flex flex-1 justify-center w-full">
+        {/* 🔹 왼쪽 사이드바 */}
+        <div className="hidden lg:flex w-[18rem] px-4">
+          <LeftSideBar
+            user={{
+              displayName: user?.displayName ?? "사용자",
+              photoURL: user?.photoURL ?? "https://i.pravatar.cc/40?img=10",
+            }}
+            isDarkMode={isDarkMode}
+            toggleDarkMode={toggleDarkMode}
+          />
         </div>
-      </main>
-      <RightSideBar />
-      <footer className="bg-gray-200 py-3 text-center text-sm text-gray-600">
+
+        {/* 🔸 메인 컨텐츠 */}
+        <main className="flex-1 w-full max-w-2xl px-4 py-6">
+          <NotificationsIcon />
+          <Outlet />
+        </main>
+
+        {/* 🔹 오른쪽 사이드바 */}
+        <div className="hidden xl:flex w-[18rem] px-4">
+          <RightSideBar />
+        </div>
+      </div>
+
+      {/* ✅ 하단 푸터 */}
+      <footer
+        className={`py-3 text-center text-sm border-t ${
+          isDarkMode
+            ? "border-gray-700 text-gray-400"
+            : "border-gray-200 text-gray-600"
+        }`}
+      >
         © {new Date().getFullYear()} MySNS. All rights reserved.
       </footer>
     </div>
