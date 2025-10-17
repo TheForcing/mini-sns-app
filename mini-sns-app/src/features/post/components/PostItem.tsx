@@ -7,7 +7,7 @@ import { toggleLike } from "../../../api/toggleLike";
 import Comment from "../../comments/components/Comment";
 import { Link, useNavigate } from "react-router-dom";
 import { formatRelativeTime } from "../../../utils/time";
-import { sendNotification } from "../../notification/hooks/notification";
+import { sendNotification } from "../../notification/hooks/useNotifications";
 
 type Post = {
   id: string;

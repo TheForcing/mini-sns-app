@@ -1,5 +1,9 @@
-module.exports = {
-  content: ["./src/**/*.{js,ts,jsx,tsx}"],
+import forms from "@tailwindcss/forms";
+import typography from "@tailwindcss/typography";
+
+export default {
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
@@ -25,5 +29,5 @@ module.exports = {
       },
     },
   },
-  plugins: [require("@tailwindcss/forms"), require("@tailwindcss/typography")],
+  plugins: [forms, typography],
 };

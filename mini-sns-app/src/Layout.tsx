@@ -18,6 +18,26 @@ const Layout: React.FC = () => {
     return () => unsub();
   }, []);
 
+  // ✅ 다크모드 상태 복원
+  useEffect(() => {
+    const saved = localStorage.getItem("theme");
+    if (saved === "dark") {
+      setIsDarkMode(true);
+      document.documentElement.classList.add("dark");
+    }
+  }, []);
+
+  // ✅ 다크모드 변경 시 <html> class 조정
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [isDarkMode]);
+
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -34,19 +54,15 @@ const Layout: React.FC = () => {
     { to: "/notifications", label: "알림" },
   ];
 
-  const toggleDarkMode = () => setIsDarkMode((prev) => !prev);
-
   return (
-    <div
-      className={`min-h-screen flex flex-col transition-colors duration-300 ${
-        isDarkMode ? "bg-gray-900 text-gray-100" : "bg-gray-100 text-gray-900"
-      }`}
-    >
-      {/* ✅ 상단 네비게이션 */}
+    <div className="min-h-screen flex flex-col bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-300">
+      {/* ✅ Navbar */}
       <Navbar
         links={links}
         logo={
-          <span className="text-2xl font-extrabold text-blue-600">MySNS</span>
+          <span className="text-2xl font-extrabold text-blue-600 dark:text-blue-400">
+            MySNS
+          </span>
         }
         user={
           user
@@ -62,9 +78,8 @@ const Layout: React.FC = () => {
         }}
       />
 
-      {/* ✅ 본문 영역 (3열 구조) */}
+      {/* ✅ 3단 레이아웃 */}
       <div className="flex flex-1 justify-center w-full">
-        {/* 🔹 왼쪽 사이드바 */}
         <div className="hidden lg:flex w-[18rem] px-4">
           <LeftSideBar
             user={{
@@ -72,30 +87,21 @@ const Layout: React.FC = () => {
               photoURL: user?.photoURL ?? "https://i.pravatar.cc/40?img=10",
             }}
             isDarkMode={isDarkMode}
-            toggleDarkMode={toggleDarkMode}
+            toggleDarkMode={() => setIsDarkMode((prev) => !prev)}
           />
         </div>
 
-        {/* 🔸 메인 컨텐츠 */}
         <main className="flex-1 w-full max-w-2xl px-4 py-6">
           <NotificationsIcon />
           <Outlet />
         </main>
 
-        {/* 🔹 오른쪽 사이드바 */}
         <div className="hidden xl:flex w-[18rem] px-4">
           <RightSideBar />
         </div>
       </div>
 
-      {/* ✅ 하단 푸터 */}
-      <footer
-        className={`py-3 text-center text-sm border-t ${
-          isDarkMode
-            ? "border-gray-700 text-gray-400"
-            : "border-gray-200 text-gray-600"
-        }`}
-      >
+      <footer className="py-3 text-center text-sm border-t border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400">
         © {new Date().getFullYear()} MySNS. All rights reserved.
       </footer>
     </div>
