@@ -3,9 +3,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import Profile from "./pages/profile/[id]";
+import Profile from "./pages/ProfilePage";
 import UserProfile from "./pages/ProfilePage";
-import NotificationPage from "./features/notification/compoenents/NotificationsPage";
+import NotificationList from "./features/notification/compoenents/NotificationsList";
 import FollowList from "./features/follow/components/FollowList";
 import SearchBar from "./components/ui/SearchBar";
 import Layout from "./Layout";
@@ -16,6 +16,7 @@ import { useEffect } from "react";
 import { seedData } from "./utils/seedData";
 import { Toaster } from "react-hot-toast";
 import AdminDashBoard from "../src/features/admin/components/AdminDashBoard";
+import ProfilePage from "./pages/ProfilePage";
 
 function App() {
   useEffect(() => {
@@ -34,12 +35,13 @@ function App() {
           <Route path="/create" element={<CreatePost />} />{" "}
           {/* ✅ 글쓰기 라우트 */}
           <Route path="/profile" element={<Profile />} />
+          <Route path="/profile/edit" element={<ProfilePage />} />
           <Route
             path="/profile/:id/followers"
             element={<FollowList type="followers" userId="" />}
           />
           <Route path="/user/:uid" element={<UserProfile />} />
-          <Route path="/notifications" element={<NotificationPage />} />
+          <Route path="/notifications" element={<NotificationList />} />
           <Route path="/search" element={<SearchBar />} />
           <Route path="/post/:postId" element={<PostPage />} />
         </Route>
