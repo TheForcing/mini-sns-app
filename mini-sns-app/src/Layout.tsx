@@ -4,7 +4,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { auth } from "./firebase";
 import { Navbar } from "./components/ui";
-import NotificationsIcon from "./features/notification/compoenents/NotificationsIcon";
+import NotificationsIcon from "./features/notification/components/NotificationsIcon";
 import RightSideBar from "./components/ui/RightSideBar";
 import LeftSideBar from "./components/ui/LeftSideBar";
 
