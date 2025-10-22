@@ -1,14 +1,9 @@
 import React from "react";
-import { Message } from "../types";
 import MessageItem from "./MessageItem";
 
-interface Props {
-  messages: Message[];
-}
-
-const MessageList: React.FC<Props> = ({ messages }) => {
+const MessageList = ({ messages }: { messages: any[] }) => {
   return (
-    <div className="message-list">
+    <div className="space-y-3">
       {messages.map((msg) => (
         <MessageItem key={msg.id} message={msg} />
       ))}

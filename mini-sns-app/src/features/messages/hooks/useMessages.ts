@@ -1,19 +1,27 @@
-// messageServices.ts
+import { useState, useEffect } from "react";
+import { getMessages } from "../services/messageServices";
 import { Message } from "../types";
 
-export const useMessages = async (userId: string): Promise<Message[]> => {
-  const res = await fetch(`/api/messages/${userId}`);
-  const data = await res.json();
+export function useMessages(userId: string) {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // 서버 응답 구조 확인 후 변환
-  const messages: Message[] = data.map((item: any) => ({
-    id: item.id,
-    senderId: item.senderId,
-    receiverId: item.receiverId,
-    content: item.content,
-    createdAt: new Date(item.createdAt),
-    read: !!item.read,
-  }));
+  useEffect(() => {
+    if (!userId) return;
 
-  return messages;
-};
+    const fetchMessages = async () => {
+      try {
+        const data = await getMessages(userId);
+        setMessages(data);
+      } catch (err) {
+        console.error("메시지 불러오기 오류:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMessages();
+  }, [userId]);
+
+  return { messages, loading };
+}
