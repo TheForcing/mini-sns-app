@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { auth } from "./firebase";
-import { Navbar } from "./components/ui";
+import Navbar from "./components/ui/Navbar"; // 경로 확인
 import NotificationsIcon from "./features/notification/components/NotificationsIcon";
 import RightSideBar from "./components/ui/RightSideBar";
 import LeftSideBar from "./components/ui/LeftSideBar";
@@ -18,7 +18,6 @@ const Layout: React.FC = () => {
     return () => unsub();
   }, []);
 
-  // ✅ 다크모드 복원
   useEffect(() => {
     const saved = localStorage.getItem("theme");
     if (saved === "dark") {
@@ -51,11 +50,11 @@ const Layout: React.FC = () => {
     { to: "/feed", label: "피드" },
     { to: "/create", label: "글쓰기" },
     { to: "/notifications", label: "알림" },
+    { to: "/messages", label: "메시지" },
   ];
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-300">
-      {/* ✅ 상단 Navbar */}
       <Navbar
         links={links}
         logo={
@@ -75,11 +74,11 @@ const Layout: React.FC = () => {
         onSearch={(q) => {
           if (q?.trim()) navigate(`/search?q=${encodeURIComponent(q.trim())}`);
         }}
+        isDarkMode={isDarkMode}
+        toggleDarkMode={() => setIsDarkMode((p) => !p)}
       />
 
-      {/* ✅ 3단 레이아웃 (좌 - 중앙 - 우) */}
       <div className="flex flex-1 justify-center w-full max-w-[1400px] mx-auto">
-        {/* 🔹 왼쪽 사이드바 */}
         <aside className="hidden lg:block w-[250px] px-4 py-6">
           <LeftSideBar
             user={{
@@ -91,19 +90,16 @@ const Layout: React.FC = () => {
           />
         </aside>
 
-        {/* 🔸 메인 콘텐츠 */}
         <main className="flex-1 max-w-2xl px-4 py-6">
           <NotificationsIcon />
           <Outlet />
         </main>
 
-        {/* 🔹 오른쪽 사이드바 */}
         <aside className="hidden xl:block w-[250px] px-4 py-6">
           <RightSideBar />
         </aside>
       </div>
 
-      {/* ✅ 푸터 */}
       <footer className="py-3 text-center text-sm border-t border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400">
         © {new Date().getFullYear()} MySNS. All rights reserved.
       </footer>

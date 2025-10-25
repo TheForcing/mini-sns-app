@@ -1,8 +1,11 @@
+// src/features/messages/types.ts
 export interface Message {
   id: string;
   senderId: string;
+  senderName?: string;
+  senderPhoto?: string;
   receiverId: string;
-  content: string;
-  createdAt: Date;
-  read: boolean;
+  text: string;
+  createdAt: any; // Firestore Timestamp
+  read?: boolean;
 }
