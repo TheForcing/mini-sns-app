@@ -1,56 +1,54 @@
-// src/features/auth/hooks/useAuth.ts
 import { useEffect, useState } from "react";
-import { onAuthStateChanged, User } from "firebase/auth";
+import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../../../firebase";
 
-type UserProfile = {
-  username?: string;
-  email?: string;
+interface Profile {
+  displayName?: string;
   photoURL?: string;
+  bio?: string;
   banned?: boolean;
-  [key: string]: any;
-};
+  role?: "user" | "admin";
+}
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (u) => {
-      setLoading(true);
-      setUser(u);
-      try {
-        if (u) {
-          const snap = await getDoc(doc(db, "users", u.uid));
-          if (snap.exists()) {
-            const data = snap.data() as UserProfile;
-            if (data.banned) {
-              await auth.signOut();
-              setProfile(null);
-              setError("차단된 계정입니다.");
-            } else {
-              setProfile(data);
-              setError(null);
-            }
-          } else {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setUser(firebaseUser);
+      if (firebaseUser) {
+        const ref = doc(db, "users", firebaseUser.uid);
+        const snap = await getDoc(ref);
+
+        if (snap.exists()) {
+          const data = snap.data() as Profile;
+          if (data.banned) {
+            alert("🚫 차단된 계정입니다. 로그아웃됩니다.");
+            await signOut(auth);
+            setUser(null);
             setProfile(null);
-            setError(null);
+          } else {
+            setProfile(data);
           }
         } else {
-          setProfile(null);
+          // Firestore에 프로필 문서가 없으면 새로 생성 필요
+          setProfile({
+            displayName: firebaseUser.displayName ?? "사용자",
+            photoURL: firebaseUser.photoURL ?? "",
+            role: "user",
+          });
         }
-      } catch (err) {
-        console.error("useAuth error:", err);
-        setError("사용자 정보를 불러오는 중 오류가 발생했습니다.");
-      } finally {
-        setLoading(false);
+      } else {
+        setProfile(null);
       }
+      setLoading(false);
     });
-    return () => unsub();
+
+    return () => unsubscribe();
   }, []);
 
-  return { user, profile, loading, error };
+  return { user, profile, loading };
 }
