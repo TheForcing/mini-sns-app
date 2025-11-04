@@ -5,7 +5,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Profile from "./pages/ProfilePage";
 import UserProfile from "./pages/ProfilePage";
-import NotificationList from "./features/notification/components/NotificationsList";
+import { NotificationsList } from "./features/notification/components/NotificationsList";
 import FollowList from "./features/follow/components/FollowList";
 import SearchBar from "./components/ui/SearchBar";
 import Layout from "./Layout";
@@ -42,7 +42,7 @@ function App() {
             element={<FollowList type="followers" userId="" />}
           />
           <Route path="/user/:uid" element={<UserProfile />} />
-          <Route path="/notifications" element={<NotificationList />} />
+          <Route path="/notifications" element={<NotificationsList />} />
           <Route path="/search" element={<SearchBar />} />
           <Route path="/post/:postId" element={<PostPage />} />
           <Route path="/messages" element={<MessagesPage />} />

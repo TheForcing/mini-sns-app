@@ -96,7 +96,7 @@ export async function createPost(
   const payload: Post = {
     content: post.content,
     authorId: post.authorId,
-    authorName: post.authorName ?? null,
+    authorName: post.authorName ?? undefined,
     authorPhoto: post.authorPhoto ?? null,
     createdAt: serverTimestamp(),
     likes: [],
