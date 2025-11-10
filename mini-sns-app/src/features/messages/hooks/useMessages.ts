@@ -19,11 +19,11 @@ export function useMessages(chatId?: string) {
       setMessages(items);
       setLoading(false);
       // 자동 읽음 처리 (예: 들어온 메시지 중 내가 안 읽은 것을 mark)
-      const unread = items.filter(
-        (m) => !m.readBy?.includes(auth.currentUser?.uid)
-      );
+      const uid = auth.currentUser?.uid;
+      if (!uid) return;
+      const unread = items.filter((m) => !m.readBy?.includes(uid));
       if (unread.length) {
-        const ids = unread.map((u) => u.id);
+        const ids = unread.map((u) => u.id).filter(Boolean) as string[];
         markMessagesRead(chatId, ids).catch((e) =>
           console.warn("mark read failed:", e)
         );
