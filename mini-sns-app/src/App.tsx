@@ -1,57 +1,67 @@
-// src/App.tsx
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Layout from "./Layout";
 import Home from "./pages/Home";
+import Feed from "./pages/Feed";
+import PostPages from "./pages/PostPages";
+import ProfilePage from "./pages/ProfilePage";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import Profile from "./pages/ProfilePage";
-import UserProfile from "./pages/ProfilePage";
-import { NotificationsList } from "./features/notification/components/NotificationsList";
-import FollowList from "./features/follow/components/FollowList";
-import SearchBar from "./components/ui/SearchBar";
-import Layout from "./Layout";
-import PostPage from "./pages/PostPages";
-import Feed from "./pages/Feed";
-import CreatePost from "./pages/CreatePostWithUpload"; // ✅ 글쓰기 페이지
-import { useEffect } from "react";
-import { seedData } from "./utils/seedData";
-import { Toaster } from "react-hot-toast";
-import AdminDashBoard from "../src/features/admin/components/AdminDashBoard";
-import ProfilePage from "./pages/ProfilePage";
-import MessagesPage from "./pages/MessagePage";
+import MessagePage from "./pages/MessagePage";
+import NotificationsList from "./features/notification/components/NotificationsList";
+import AdminDashboard from "./features/admin/components/AdminDashboard";
+import ProtectedRoute from "./components/ProtectedRoute";
+import AdminRoute from "./components/AdminRoute";
 
 function App() {
-  useEffect(() => {
-    seedData(); // 더미 데이터 삽입
-  }, []);
-
   return (
     <BrowserRouter>
-      <Toaster position="top-center" />
-
       <Routes>
-        {/* Layout 안에서 공통 UI 적용 */}
+        {/* Layout 안에 렌더되는 공통 페이지들 */}
         <Route element={<Layout />}>
-          <Route path="/" element={<Home />} />
+          <Route index element={<Home />} />
           <Route path="/feed" element={<Feed />} />
-          <Route path="/create" element={<CreatePost />} />{" "}
-          {/* ✅ 글쓰기 라우트 */}
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/profile/edit" element={<ProfilePage />} />
+          <Route path="/post/:postId" element={<PostPages />} />
           <Route
-            path="/profile/:id/followers"
-            element={<FollowList type="followers" userId="" />}
+            path="/profile/:id"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
           />
-          <Route path="/user/:uid" element={<UserProfile />} />
-          <Route path="/notifications" element={<NotificationsList />} />
-          <Route path="/search" element={<SearchBar />} />
-          <Route path="/post/:postId" element={<PostPage />} />
-          <Route path="/messages" element={<MessagesPage />} />
+          <Route
+            path="/messages"
+            element={
+              <ProtectedRoute>
+                <MessagePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute>
+                <NotificationsList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/*"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
         </Route>
 
-        {/* Layout 없이 보여줄 페이지 */}
+        {/* Layout 없이 노출되는 페이지들 */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/admin" element={<AdminDashBoard />} />
+
+        {/* 그 외 리다이렉트 */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
