@@ -9,9 +9,9 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import MessagePage from "./pages/MessagePage";
 import NotificationsList from "./features/notification/components/NotificationsList";
-import AdminDashboard from "./features/admin/components/AdminDashboard";
+import AdminDashboard from "./features/admin/components/AdminDashBoard";
 import ProtectedRoute from "./components/ProtectedRoute";
-import AdminRoute from "./components/AdminRoute";
+import AdminRoute from "./features/admin/components/AdminRoute";
 
 function App() {
   return (
